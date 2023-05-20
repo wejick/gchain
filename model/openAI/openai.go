@@ -31,6 +31,7 @@ func NewOpenAIModel(authToken string, orgID string, modelName string) (model *Op
 	return
 }
 
+// Call runs completion request to the specified model
 func (O *OpenAIModel) Call(ctx context.Context, prompt string, options ...func(*model.Option)) (output string, err error) {
 	opts := model.Option{}
 	for _, opt := range options {

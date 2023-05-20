@@ -21,7 +21,7 @@ var echoLlmChain = llm_chain.NewLLMChain(&model.LLMModelMock{
 func TestStuffCombineDocument_Combine(t *testing.T) {
 
 	type fields struct {
-		prompt            *prompt.Prompt_template
+		prompt            *prompt.PromptTemplate
 		llmChain          *llm_chain.LLMChain
 		promptTemplateKey string
 	}
@@ -79,7 +79,7 @@ func TestStuffCombineDocument_Combine(t *testing.T) {
 
 func TestStuffCombineDocument_Run(t *testing.T) {
 	type fields struct {
-		prompt            *prompt.Prompt_template
+		prompt            *prompt.PromptTemplate
 		llmChain          *llm_chain.LLMChain
 		promptTemplateKey string
 	}
@@ -133,7 +133,7 @@ func TestStuffCombineDocument_Run(t *testing.T) {
 
 func TestStuffCombineDocument_SimpleRun(t *testing.T) {
 	type fields struct {
-		prompt            *prompt.Prompt_template
+		prompt            *prompt.PromptTemplate
 		llmChain          *llm_chain.LLMChain
 		promptTemplateKey string
 	}

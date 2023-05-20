@@ -12,7 +12,7 @@ func TestPrompt_template_FormatPrompt(t *testing.T) {
 		name              string
 		templateName      string
 		templateString    string
-		promptTemplate    *Prompt_template
+		promptTemplate    *PromptTemplate
 		args              args
 		wantOutput_prompt string
 		wantErr           bool

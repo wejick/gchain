@@ -21,12 +21,12 @@ var _ chain.BaseChain = &StuffCombineDocument{}
 
 // CombineDocument chain to work on text document with defined prompt
 type StuffCombineDocument struct {
-	prompt            *prompt.Prompt_template
+	prompt            *prompt.PromptTemplate
 	llmChain          *llm_chain.LLMChain
 	promptTemplateKey string
 }
 
-func NewStuffCombineDocument(prompt *prompt.Prompt_template,
+func NewStuffCombineDocument(prompt *prompt.PromptTemplate,
 	templateKey string, llmChain *llm_chain.LLMChain) *StuffCombineDocument {
 	return &StuffCombineDocument{
 		prompt:            prompt,

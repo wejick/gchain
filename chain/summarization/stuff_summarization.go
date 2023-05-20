@@ -23,7 +23,7 @@ type StuffSummarizationChain struct {
 func NewStuffSummarizationChain(llm_chain *llm_chain.LLMChain,
 	promptTemplateString string, promptTemplateKey string) (s *StuffSummarizationChain, err error) {
 
-	var promptTemplate *prompt.Prompt_template
+	var promptTemplate *prompt.PromptTemplate
 
 	if promptTemplateString == "" {
 		promptTemplate, err = prompt.NewPromptTemplate("stuff", promptSummarizeStuff)
