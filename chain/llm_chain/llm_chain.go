@@ -20,20 +20,20 @@ func NewLLMChain(llmModel model.LLMModel) (llmchain *LLMChain) {
 	}
 }
 
-// Run expect input["input"] as input, and put the result to output["output"]
-func (L *LLMChain) Run(ctx context.Context, input map[string]string, options ...func(*model.Option)) (output map[string]string, err error) {
-	if _, ok := input["input"]; !ok {
+// Run expect prompt["input"] as input, and put the result to output["output"]
+func (L *LLMChain) Run(ctx context.Context, prompt map[string]string, options ...func(*model.Option)) (output map[string]string, err error) {
+	if _, ok := prompt["input"]; !ok {
 		return output, errors.New("input[\"input\"] is not specified")
 	}
 	output = make(map[string]string)
 
-	output["output"], err = L.llmModel.Call(ctx, input["input"], options...)
+	output["output"], err = L.llmModel.Call(ctx, prompt["input"], options...)
 
 	return
 }
 
-// SimpleRun will run the input string agains llmchain
-func (L *LLMChain) SimpleRun(ctx context.Context, input string, options ...func(*model.Option)) (output string, err error) {
-	output, err = L.llmModel.Call(ctx, input, options...)
+// SimpleRun will run the prompt string agains llmchain
+func (L *LLMChain) SimpleRun(ctx context.Context, prompt string, options ...func(*model.Option)) (output string, err error) {
+	output, err = L.llmModel.Call(ctx, prompt, options...)
 	return
 }
