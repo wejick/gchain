@@ -10,22 +10,17 @@ import (
 	"github.com/wejick/gochain/prompt"
 )
 
-type CombinedDocument interface {
-	// Combine document and do something
-	// the implementation of combine can run LLM againts the doc
-	Combine(ctx context.Context, docs []string, options ...func(*model.Option)) (output string, err error)
-}
-
 var _ CombinedDocument = &StuffCombineDocument{}
 var _ chain.BaseChain = &StuffCombineDocument{}
 
-// CombineDocument chain to work on text document with defined prompt
+// StuffCombineDocument chain to feed text document to LLM with specified prompt
 type StuffCombineDocument struct {
 	prompt            *prompt.PromptTemplate
 	llmChain          *llm_chain.LLMChain
 	promptTemplateKey string
 }
 
+// NewStuffCombineDocument creates new instance of StuffCombineDocument
 func NewStuffCombineDocument(prompt *prompt.PromptTemplate,
 	templateKey string, llmChain *llm_chain.LLMChain) *StuffCombineDocument {
 	return &StuffCombineDocument{
@@ -35,6 +30,7 @@ func NewStuffCombineDocument(prompt *prompt.PromptTemplate,
 	}
 }
 
+// Combine concatenate the given document and then feed to LLM
 func (S *StuffCombineDocument) Combine(ctx context.Context, docs []string, options ...func(*model.Option)) (output string, err error) {
 	//concat all docs into 1 string
 	var doc string
