@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/wejick/gochain/chain"
 	"github.com/wejick/gochain/chain/combine_document"
 	"github.com/wejick/gochain/chain/llm_chain"
 	"github.com/wejick/gochain/model"
@@ -19,6 +20,8 @@ CONCISE SUMMARY:`
 type StuffSummarizationChain struct {
 	stuffCombineDocument *combine_document.StuffCombineDocument
 }
+
+var _ chain.BaseChain = &StuffSummarizationChain{}
 
 func NewStuffSummarizationChain(llm_chain *llm_chain.LLMChain,
 	promptTemplateString string, promptTemplateKey string) (s *StuffSummarizationChain, err error) {
@@ -41,7 +44,8 @@ func NewStuffSummarizationChain(llm_chain *llm_chain.LLMChain,
 	return
 }
 
-// Run expect input["input"] as input, and put the result to output["output"]
+// Run all entries in input map will be treated as document to be combined
+// output will be output["output"]
 func (S *StuffSummarizationChain) Run(ctx context.Context, input map[string]string, options ...func(*model.Option)) (output map[string]string, err error) {
 	if _, ok := input["input"]; !ok {
 		return output, errors.New("input[\"input\"] is not specified")

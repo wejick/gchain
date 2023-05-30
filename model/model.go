@@ -9,10 +9,17 @@ type LLMModel interface {
 
 type Option struct {
 	Temperature float32
+	MaxToken    int
 }
 
 func WithTemperature(temp float32) func(*Option) {
 	return func(o *Option) {
 		o.Temperature = temp
+	}
+}
+
+func MaxToken(maxToken int) func(*Option) {
+	return func(o *Option) {
+		o.MaxToken = maxToken
 	}
 }

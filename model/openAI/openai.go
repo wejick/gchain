@@ -41,6 +41,7 @@ func (O *OpenAIModel) Call(ctx context.Context, prompt string, options ...func(*
 	request := goopenai.CompletionRequest{
 		Model:       O.modelName,
 		Temperature: opts.Temperature,
+		MaxTokens:   opts.MaxToken,
 		Prompt:      prompt,
 	}
 

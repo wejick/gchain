@@ -25,8 +25,8 @@ func NewStuffCombineDocument(prompt *prompt.PromptTemplate,
 	templateKey string, llmChain *llm_chain.LLMChain) *StuffCombineDocument {
 	return &StuffCombineDocument{
 		prompt:            prompt,
-		promptTemplateKey: templateKey,
 		llmChain:          llmChain,
+		promptTemplateKey: templateKey,
 	}
 }
 

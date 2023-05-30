@@ -13,7 +13,7 @@ var echoLlmChain = llm_chain.NewLLMChain(&model.LLMModelMock{
 		return prompt, nil
 	},
 })
-var chain, _ = NewStuffSummarizationChain(echoLlmChain, "", "text")
+var testChain, _ = NewStuffSummarizationChain(echoLlmChain, "", "text")
 
 func TestStuffSummarizationChain_SimpleRun(t *testing.T) {
 	type args struct {
@@ -47,7 +47,7 @@ CONCISE SUMMARY:`,
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			S := chain
+			S := testChain
 			gotOutput, err := S.SimpleRun(tt.args.ctx, tt.args.input, tt.args.options...)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("StuffSummarizationChain.SimpleRun() error = %v, wantErr %v", err, tt.wantErr)
