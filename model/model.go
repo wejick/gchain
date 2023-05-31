@@ -23,3 +23,20 @@ func MaxToken(maxToken int) func(*Option) {
 		o.MaxToken = maxToken
 	}
 }
+
+type ChatModel interface {
+	LLMModel
+	Chat(ctx context.Context, messages []ChatMessage, options ...func(*Option)) (ChatMessage, error)
+	ChatStreaming(ctx context.Context, prompt string, options ...func(*Option)) (string, error)
+}
+
+type ChatMessage struct {
+	Role    string
+	Content string
+}
+
+const (
+	ChatMessageRoleSystem    = "system"
+	ChatMessageRoleUser      = "user"
+	ChatMessageRoleAssistant = "assistant"
+)

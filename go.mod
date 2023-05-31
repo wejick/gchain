@@ -3,7 +3,7 @@ module github.com/wejick/gochain
 go 1.20
 
 require (
-	github.com/sashabaranov/go-openai v1.9.4
+	github.com/sashabaranov/go-openai v1.9.5
 	github.com/stretchr/testify v1.8.3
 )
 

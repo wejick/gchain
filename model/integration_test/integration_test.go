@@ -37,3 +37,28 @@ func TestOpenAICall(t *testing.T) {
 		t.Log("output : ", output)
 	}
 }
+
+func TestOpenAIChat(t *testing.T) {
+	var testModel = _openai.NewOpenAIChatModel(authToken, "", _openai.GPT3Dot5Turbo0301)
+
+	testMessages := []model.ChatMessage{
+		{Role: model.ChatMessageRoleUser, Content: "Answer in short and directly, Jakarta is capital city of what ?"},
+	}
+	output, err := testModel.Chat(context.Background(), testMessages)
+	if err != nil {
+		t.Error(err)
+	} else {
+		t.Log("output : ", output)
+	}
+}
+
+func TestOpenAIChatCall(t *testing.T) {
+	var testModel = _openai.NewOpenAIChatModel(authToken, "", _openai.GPT3Dot5Turbo0301)
+
+	output, err := testModel.Call(context.Background(), "Answer in short and directly, Jakarta is capital city of what ?")
+	if err != nil {
+		t.Error(err)
+	} else {
+		t.Log("output : ", output)
+	}
+}
