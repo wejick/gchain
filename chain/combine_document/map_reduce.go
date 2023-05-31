@@ -8,6 +8,7 @@ import (
 	"github.com/wejick/gochain/chain/llm_chain"
 	"github.com/wejick/gochain/model"
 	"github.com/wejick/gochain/prompt"
+	"github.com/wejick/gochain/textsplitter"
 )
 
 // MapReduceCombineDocument Combining documents by mapping a chain over them first, then combining results.
@@ -15,6 +16,7 @@ type MapReduceCombineDocument struct {
 	mapPrompt         *prompt.PromptTemplate
 	reducePrompt      *prompt.PromptTemplate
 	llmChain          *llm_chain.LLMChain
+	splitter          textsplitter.TextSplitter
 	promptTemplateKey string
 	maxDocLength      int
 }
@@ -56,7 +58,7 @@ func (S *MapReduceCombineDocument) Combine(ctx context.Context, docs []string, o
 	// Map
 	for _, doc := range docs {
 		// split document into batches based on maxToken limit
-		batches := splitIntoBatches(doc, S.maxDocLength)
+		batches := S.splitter.SplitText(doc)
 
 		mapResults, err := S.runOperation(ctx, batches, S.mapPrompt, options...)
 		if err != nil {
@@ -69,7 +71,7 @@ func (S *MapReduceCombineDocument) Combine(ctx context.Context, docs []string, o
 	intermediateString := strings.Join(intermediateResults, "\n")
 
 	// Split combined result into batches again
-	batches := splitIntoBatches(intermediateString, S.maxDocLength)
+	batches := S.splitter.SplitText(intermediateString)
 
 	// Reduce
 	finalResults, err := S.runOperation(ctx, batches, S.reducePrompt, options...)
@@ -100,33 +102,6 @@ func (S *MapReduceCombineDocument) runOperation(ctx context.Context, batches []s
 		results = append(results, result)
 	}
 	return results, nil
-}
-
-// splitIntoBatches creates word batches where length's doesn't exceed maxToken.
-func splitIntoBatches(input string, maxToken int) []string {
-	var batches []string
-
-	words := strings.Fields(input)
-	var batch []string
-	var lenCounter int
-
-	for _, word := range words {
-		// +1 is for a possible space character
-		if lenCounter+len(word)+1 > maxToken {
-			batches = append(batches, strings.Join(batch, " "))
-			batch = []string{}
-			lenCounter = 0
-		}
-
-		batch = append(batch, word)
-		lenCounter += len(word) + 1
-	}
-
-	if len(batch) > 0 {
-		batches = append(batches, strings.Join(batch, " "))
-	}
-
-	return batches
 }
 
 // Run all entries in input map will be treated as document to be combined
