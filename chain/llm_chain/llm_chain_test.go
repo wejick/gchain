@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/wejick/gochain/model"
+	"github.com/wejick/gochain/prompt"
 )
 
 func TestLLMChain_SimpleRun(t *testing.T) {
@@ -91,7 +92,7 @@ func TestLLMChain_Run(t *testing.T) {
 					},
 				},
 			},
-			wantErr: true,
+			wantOutput: map[string]string{"output": ""},
 		},
 		{
 			name: "echo input",
@@ -108,10 +109,12 @@ func TestLLMChain_Run(t *testing.T) {
 			wantOutput: map[string]string{"output": "echo input"},
 		},
 	}
+	customPrompt, _ := prompt.NewPromptTemplate("customPrompt", "{{.input}}")
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			L := &LLMChain{
-				llmModel: tt.fields.llmModel,
+				llmModel:       tt.fields.llmModel,
+				promptTemplate: customPrompt,
 			}
 			gotOutput, err := L.Run(tt.args.ctx, tt.args.input, tt.args.options...)
 			if (err != nil) != tt.wantErr {

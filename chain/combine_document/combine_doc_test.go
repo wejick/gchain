@@ -12,11 +12,11 @@ import (
 
 var emptyPrompt, _ = prompt.NewPromptTemplate("empty", "")
 var echoPrompt, _ = prompt.NewPromptTemplate("empty", "{{.echo}}")
-var echoLlmChain = llm_chain.NewLLMChain(&model.LLMModelMock{
+var echoLlmChain, _ = llm_chain.NewLLMChain(&model.LLMModelMock{
 	CallFunc: func(ctx context.Context, prompt string, options ...func(*model.Option)) (string, error) {
 		return prompt, nil
 	},
-})
+}, nil)
 
 func TestStuffCombineDocument_Combine(t *testing.T) {
 

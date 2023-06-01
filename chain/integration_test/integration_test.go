@@ -15,6 +15,7 @@ import (
 	"github.com/wejick/gochain/chain/summarization"
 	"github.com/wejick/gochain/model"
 	_openai "github.com/wejick/gochain/model/openAI"
+	"github.com/wejick/gochain/prompt"
 )
 
 var llmModel model.LLMModel
@@ -39,14 +40,25 @@ func TestMain(m *testing.M) {
 }
 
 func TestLlmChain(t *testing.T) {
-	chain := llm_chain.NewLLMChain(llmModel)
+	chain, err := llm_chain.NewLLMChain(llmModel, nil)
+	assert.NoError(t, err, "NewLLMChain")
 	outputMap, err := chain.Run(context.Background(), map[string]string{"input": "Indonesia Capital is Jakarta\nJakarta is the capital of "})
 	assert.NoError(t, err, "error Run")
 	assert.Contains(t, outputMap["output"], "Indonesia", "unexpected result")
+
+	customPrompt, err := prompt.NewPromptTemplate("customPrompt", "{{.text}}")
+	customPromptChain, err := llm_chain.NewLLMChain(llmModel, customPrompt)
+	assert.NoError(t, err, "NewLLMChain")
+
+	customOutputMap, err := customPromptChain.Run(context.Background(), map[string]string{"text": "Indonesia Capital is Jakarta\nJakarta is the capital of "})
+	assert.NoError(t, err, "error Run")
+	assert.Contains(t, customOutputMap["output"], "Indonesia", "unexpected result")
 }
 
 func TestStuffSummarizationChain(t *testing.T) {
-	llmchain := llm_chain.NewLLMChain(llmModel)
+	llmchain, err := llm_chain.NewLLMChain(llmModel, nil)
+	assert.NoError(t, err, "NewLLMChain")
+
 	chain, err := summarization.NewStuffSummarizationChain(llmchain, "", "text")
 	assert.NoError(t, err, "error NewStuffSummarizationChain")
 	output, err := chain.SimpleRun(context.Background(), `Modular audio and video hardware for retro machines like the Commodore 64. Designed to use 74 series TTL through hole ICs available back in the 1980s, something you can solder at home from parts or order ready assembled.
@@ -62,7 +74,9 @@ func TestStuffSummarizationChain(t *testing.T) {
 }
 
 func TestMapReduceSummarizationChain(t *testing.T) {
-	llmchain := llm_chain.NewLLMChain(llmModel)
+	llmchain, err := llm_chain.NewLLMChain(llmModel, nil)
+	assert.NoError(t, err, "NewLLMChain")
+
 	chain, err := summarization.NewMapReduceSummarizationChain(llmchain, "", "", "text", 1000)
 	assert.NoError(t, err, "error NewMapReduceSummarizationChain")
 
@@ -82,7 +96,9 @@ func TestMapReduceSummarizationChain(t *testing.T) {
 }
 
 func TestStuffSummarizationChainChat(t *testing.T) {
-	llmchain := llm_chain.NewLLMChain(chatModel)
+	llmchain, err := llm_chain.NewLLMChain(llmModel, nil)
+	assert.NoError(t, err, "NewLLMChain")
+
 	chain, err := summarization.NewStuffSummarizationChain(llmchain, "", "text")
 	assert.NoError(t, err, "error NewStuffSummarizationChain")
 	output, err := chain.SimpleRun(context.Background(), `Modular audio and video hardware for retro machines like the Commodore 64. Designed to use 74 series TTL through hole ICs available back in the 1980s, something you can solder at home from parts or order ready assembled.

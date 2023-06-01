@@ -8,11 +8,11 @@ import (
 	"github.com/wejick/gochain/model"
 )
 
-var echoLlmChain = llm_chain.NewLLMChain(&model.LLMModelMock{
+var echoLlmChain, _ = llm_chain.NewLLMChain(&model.LLMModelMock{
 	CallFunc: func(ctx context.Context, prompt string, options ...func(*model.Option)) (string, error) {
 		return prompt, nil
 	},
-})
+}, nil)
 var testChain, _ = NewStuffSummarizationChain(echoLlmChain, "", "text")
 
 func TestStuffSummarizationChain_SimpleRun(t *testing.T) {
