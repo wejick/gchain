@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/wejick/gochain/chain/conversation"
 	"github.com/wejick/gochain/chain/llm_chain"
 	"github.com/wejick/gochain/chain/summarization"
 	"github.com/wejick/gochain/model"
@@ -17,7 +18,7 @@ import (
 )
 
 var llmModel model.LLMModel
-var chatModel model.LLMModel
+var chatModel model.ChatModel
 
 func TestMain(m *testing.M) {
 	fmt.Println("Running integration tests...")
@@ -93,4 +94,18 @@ func TestStuffSummarizationChainChat(t *testing.T) {
 
 	assert.NoError(t, err)
 	t.Log(output)
+}
+
+func TestConversationChainChat(t *testing.T) {
+	memory := []model.ChatMessage{}
+	convoChain := conversation.NewConversationChain(chatModel, memory, "You're helpful chatbot that answer very concisely")
+
+	convoChain.AppendToMemory(model.ChatMessage{Role: model.ChatMessageRoleAssistant, Content: "Hi, My name is GioAI"})
+	output, err := convoChain.Run(context.Background(), map[string]string{"input": "what's your name?"}, model.WithTemperature(0), model.MaxToken(100))
+	assert.NoError(t, err)
+
+	outputString, err := convoChain.SimpleRun(context.Background(), "so your name is gioAI", model.WithTemperature(0), model.MaxToken(100))
+
+	t.Log(output["output"])
+	t.Log(outputString)
 }
