@@ -37,6 +37,10 @@ func (C *ConversationChain) Run(ctx context.Context, chat map[string]string, opt
 
 	C.AppendToMemory(model.ChatMessage{Role: model.ChatMessageRoleUser, Content: chat["input"]})
 	message, err := C.chatModel.Chat(ctx, C.memory, options...)
+
+	// add response message to memory
+	C.AppendToMemory(message)
+
 	output["output"] = message.Content
 
 	return
