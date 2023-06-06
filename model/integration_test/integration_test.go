@@ -9,6 +9,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/sashabaranov/go-openai"
 	"github.com/wejick/gochain/model"
 	_openai "github.com/wejick/gochain/model/openAI"
 )
@@ -60,5 +61,16 @@ func TestOpenAIChatCall(t *testing.T) {
 		t.Error(err)
 	} else {
 		t.Log("output : ", output)
+	}
+}
+
+func TestOpenAIEmbedding(t *testing.T) {
+	embeddingModel := _openai.NewOpenAIEmbedModel(authToken, "", openai.AdaEmbeddingV2)
+
+	embedding, err := embeddingModel.EmbedQuery("answer in short and direct")
+	if err != nil {
+		t.Error(err)
+	} else {
+		t.Log("output : ", embedding)
 	}
 }

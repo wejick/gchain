@@ -24,6 +24,7 @@ func MaxToken(maxToken int) func(*Option) {
 	}
 }
 
+//go:generate moq -out model_chat_moq.go . ChatModel
 type ChatModel interface {
 	LLMModel
 	Chat(ctx context.Context, messages []ChatMessage, options ...func(*Option)) (ChatMessage, error)
@@ -40,3 +41,8 @@ const (
 	ChatMessageRoleUser      = "user"
 	ChatMessageRoleAssistant = "assistant"
 )
+
+type EmbeddingModel interface {
+	EmbedQuery(input string) ([]float32, error)
+	EmbedDocuments(documents []string) ([][]float32, error)
+}

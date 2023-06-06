@@ -4,6 +4,7 @@ import (
 	goopenai "github.com/sashabaranov/go-openai"
 )
 
+// Completion model name
 const (
 	GPT432K0314             = goopenai.GPT432K0314
 	GPT432K                 = goopenai.GPT432K
