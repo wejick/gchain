@@ -58,7 +58,7 @@ func (S *MapReduceCombineDocument) Combine(ctx context.Context, docs []string, o
 	// Map
 	for _, doc := range docs {
 		// split document into batches based on maxToken limit
-		batches := S.splitter.SplitText(doc)
+		batches := S.splitter.SplitText(doc, S.maxDocLength, 0)
 
 		mapResults, err := S.runOperation(ctx, batches, S.mapPrompt, options...)
 		if err != nil {
@@ -71,7 +71,7 @@ func (S *MapReduceCombineDocument) Combine(ctx context.Context, docs []string, o
 	intermediateString := strings.Join(intermediateResults, "\n")
 
 	// Split combined result into batches again
-	batches := S.splitter.SplitText(intermediateString)
+	batches := S.splitter.SplitText(intermediateString, S.maxDocLength, 0)
 
 	// Reduce
 	finalResults, err := S.runOperation(ctx, batches, S.reducePrompt, options...)

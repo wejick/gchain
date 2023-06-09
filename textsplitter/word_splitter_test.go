@@ -35,7 +35,7 @@ func TestWordSplitter_SplitText(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			W := &WordSplitter{}
-			got := W.SplitText(tt.input, 10)
+			got := W.SplitText(tt.input, 10, 0)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("WordSplitter.SplitText() = %v, want %v", got, tt.want)
 			}

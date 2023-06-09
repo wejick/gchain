@@ -11,6 +11,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/wejick/gochain/chain/conversation"
+	conversationretrieval "github.com/wejick/gochain/chain/conversation_retrieval"
 	"github.com/wejick/gochain/chain/llm_chain"
 	"github.com/wejick/gochain/chain/summarization"
 	"github.com/wejick/gochain/model"
@@ -124,4 +125,17 @@ func TestConversationChainChat(t *testing.T) {
 
 	t.Log(output["output"])
 	t.Log(outputString)
+}
+
+func TestConversationRetrievalChainChat(t *testing.T) {
+	memory := []model.ChatMessage{}
+	convoChain := conversationretrieval.NewConversationRetrievalChain(chatModel, memory, "You're helpful chatbot that answer very concisely")
+
+	convoChain.AppendToMemory(model.ChatMessage{Role: model.ChatMessageRoleAssistant, Content: "Hi, My name is GioAI"})
+	convoChain.AppendToMemory(model.ChatMessage{Role: model.ChatMessageRoleUser, Content: "Who is the first president of Indonesia?"})
+	convoChain.AppendToMemory(model.ChatMessage{Role: model.ChatMessageRoleAssistant, Content: "The first president of indonesia was Soekarno"})
+
+	response, err := convoChain.Run(context.Background(), map[string]string{"input": "when is soekarno birthday?"}, model.WithTemperature(0.3), model.MaxToken(1000))
+	t.Log(response)
+	assert.NoError(t, err)
 }

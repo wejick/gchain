@@ -6,7 +6,7 @@ type WordSplitter struct {
 }
 
 // splitIntoBatches creates word batches where length's doesn't exceed maxChunkSize.
-func (W *WordSplitter) SplitText(input string, maxChunkSize int) []string {
+func (W *WordSplitter) SplitText(input string, maxChunkSize int, overlap int) []string {
 	batches := []string{}
 
 	words := strings.Fields(input)

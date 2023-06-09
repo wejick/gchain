@@ -11,9 +11,10 @@ import (
 
 	"github.com/sashabaranov/go-openai"
 	"github.com/stretchr/testify/assert"
+	weaviateVS "github.com/wejick/gochain/datastore/weaviate_vector"
+	wikipedia "github.com/wejick/gochain/datastore/wikipedia_retrieval"
 	"github.com/wejick/gochain/model"
 	_openai "github.com/wejick/gochain/model/openAI"
-	weaviateVS "github.com/wejick/gochain/vectorstore/weaviate"
 )
 
 var llmModel model.LLMModel
@@ -22,9 +23,9 @@ var embeddingModel model.EmbeddingModel
 var OAIauthToken = os.Getenv("OPENAI_API_KEY")
 
 const (
-	wvhost   = ""
+	wvhost   = "question-testing-twjfnqyp.weaviate.network"
 	wvscheme = "https"
-	wvApiKey = ""
+	wvApiKey = "eDCEmuH6HZ6C8rbnlZFvROUGGyfzsZnwbt8j"
 )
 
 func TestMain(m *testing.M) {
@@ -60,7 +61,7 @@ func TestWeaviate(t *testing.T) {
 		assert.NoError(t, e, "addDocuments batchErr")
 	}
 
-	response, err := wvClient.SearchKeyword(context.Background(), className, "city skyline")
+	response, err := wvClient.Search(context.Background(), className, "city skyline")
 	o := convertInterfaceToMap(response[0])
 	assert.Contains(t, o["text"], "skyline")
 
@@ -81,4 +82,18 @@ func convertInterfaceToMap(input interface{}) map[string]string {
 		resultMap[key] = value.(string)
 	}
 	return resultMap
+}
+
+func TestWikipedia(t *testing.T) {
+	w := &wikipedia.Wikipedia{}
+	result, err := w.Search(context.Background(), "", "indonesia")
+	assert.NoError(t, err)
+	for _, res := range result {
+		if pageContent, ok := res.(string); ok {
+			assert.Contains(t, pageContent, "Indonesia")
+		} else {
+			t.Error("pageContent is not a string")
+		}
+	}
+
 }
