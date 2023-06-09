@@ -8,11 +8,11 @@ import (
 	"github.com/weaviate/weaviate-go-client/v4/weaviate/auth"
 	"github.com/weaviate/weaviate-go-client/v4/weaviate/graphql"
 	"github.com/weaviate/weaviate/entities/models"
+	"github.com/wejick/gochain/datastore"
 	"github.com/wejick/gochain/model"
-	"github.com/wejick/gochain/vectorstore"
 )
 
-var _ vectorstore.VectorStore = &WeaviateVectorStore{}
+var _ datastore.VectorStore = &WeaviateVectorStore{}
 
 type WeaviateVectorStore struct {
 	client         *weaviate.Client
@@ -75,7 +75,7 @@ func (W *WeaviateVectorStore) SearchVector(ctx context.Context, className string
 	return
 }
 
-func (W *WeaviateVectorStore) SearchKeyword(ctx context.Context, className string, query string) (output []interface{}, err error) {
+func (W *WeaviateVectorStore) Search(ctx context.Context, className string, query string) (output []interface{}, err error) {
 	vectorQuery, err := W.embeddingModel.EmbedQuery(query)
 	if err != nil {
 		return
