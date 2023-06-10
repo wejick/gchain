@@ -17,6 +17,7 @@ import (
 	"github.com/wejick/gochain/model"
 	_openai "github.com/wejick/gochain/model/openAI"
 	"github.com/wejick/gochain/prompt"
+	"github.com/wejick/gochain/textsplitter"
 )
 
 var llmModel model.LLMModel
@@ -129,13 +130,15 @@ func TestConversationChainChat(t *testing.T) {
 
 func TestConversationRetrievalChainChat(t *testing.T) {
 	memory := []model.ChatMessage{}
-	convoChain := conversationretrieval.NewConversationRetrievalChain(chatModel, memory, "You're helpful chatbot that answer very concisely")
+	splitter, err := textsplitter.NewTikTokenSplitter(_openai.GPT3Dot5Turbo0301)
+	assert.NoError(t, err)
+	convoChain := conversationretrieval.NewConversationRetrievalChain(chatModel, memory, splitter, "You're helpful chatbot that answer very concisely", 1000)
 
 	convoChain.AppendToMemory(model.ChatMessage{Role: model.ChatMessageRoleAssistant, Content: "Hi, My name is GioAI"})
 	convoChain.AppendToMemory(model.ChatMessage{Role: model.ChatMessageRoleUser, Content: "Who is the first president of Indonesia?"})
 	convoChain.AppendToMemory(model.ChatMessage{Role: model.ChatMessageRoleAssistant, Content: "The first president of indonesia was Soekarno"})
 
-	response, err := convoChain.Run(context.Background(), map[string]string{"input": "when is soekarno birthday?"}, model.WithTemperature(0.3), model.MaxToken(1000))
+	response, err := convoChain.Run(context.Background(), map[string]string{"input": "tell me little bit more about soekarno?"}, model.WithTemperature(0.3), model.MaxToken(1000))
 	t.Log(response)
 	assert.NoError(t, err)
 }

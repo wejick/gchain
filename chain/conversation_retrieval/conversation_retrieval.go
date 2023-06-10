@@ -10,6 +10,7 @@ import (
 	wikipedia "github.com/wejick/gochain/datastore/wikipedia_retrieval"
 	"github.com/wejick/gochain/model"
 	"github.com/wejick/gochain/prompt"
+	"github.com/wejick/gochain/textsplitter"
 )
 
 type AnswerOrLookupOutput struct {
@@ -24,20 +25,28 @@ type ConversationRetrievalChain struct {
 	chatModel           model.ChatModel // only allow using ChatModel
 	memory              []model.ChatMessage
 	retriever           datastore.Retrieval
+	textSplitter        textsplitter.TextSplitter
 	instructionTemplate *prompt.PromptTemplate
 	answerTemplate      *prompt.PromptTemplate
+	maxToken            int
 }
 
-func NewConversationRetrievalChain(chatModel model.ChatModel, memory []model.ChatMessage, firstSystemPrompt string) (chain *ConversationRetrievalChain) {
+// FIXME : put some parameter as options
+func NewConversationRetrievalChain(chatModel model.ChatModel, memory []model.ChatMessage, textSplitter textsplitter.TextSplitter, firstSystemPrompt string, maxToken int) (chain *ConversationRetrievalChain) {
 	instructionTemplate, _ := prompt.NewPromptTemplate("instruction", instruction)
 	answerTemplate, _ := prompt.NewPromptTemplate("answer", answeringInstruction)
 	memory = append(memory, model.ChatMessage{Role: model.ChatMessageRoleSystem, Content: firstSystemPrompt})
+	if maxToken == 0 {
+		maxToken = 1000
+	}
 	return &ConversationRetrievalChain{
 		chatModel:           chatModel,
 		memory:              memory,
 		retriever:           &wikipedia.Wikipedia{},
 		instructionTemplate: instructionTemplate,
 		answerTemplate:      answerTemplate,
+		maxToken:            maxToken,
+		textSplitter:        textSplitter,
 	}
 }
 
@@ -112,9 +121,9 @@ func (C *ConversationRetrievalChain) AnswerOrLookup(ctx context.Context, input s
 }
 
 func (C *ConversationRetrievalChain) AnswerFromDoc(ctx context.Context, context AnswerOrLookupOutput, doc string, options ...func(*model.Option)) (output string, err error) {
-	// FIXME cut the doc to 300
-	if len(doc) > 300 {
-		doc = doc[0:300]
+	// FIXME cut to maxToken
+	if len(doc) > C.maxToken {
+		doc = C.textSplitter.SplitText(doc, C.maxToken, 0)[0]
 	}
 
 	b, err := json.Marshal(context)

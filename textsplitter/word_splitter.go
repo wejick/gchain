@@ -31,3 +31,7 @@ func (W *WordSplitter) SplitText(input string, maxChunkSize int, overlap int) []
 
 	return batches
 }
+
+func (W *WordSplitter) Len(input string) int {
+	return len(input)
+}
