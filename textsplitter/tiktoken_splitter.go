@@ -24,7 +24,7 @@ func NewTikTokenSplitter(modelName string) (*TikTokenSplitter, error) {
 }
 
 // splitIntoBatches creates word batches where length's doesn't exceed maxChunkSize.
-func (W *TikTokenSplitter) SplitText(input string, maxChunkSize int) []string {
+func (W *TikTokenSplitter) SplitText(input string, maxChunkSize int, overlap int) []string {
 	batches := []string{}
 
 	words := strings.Fields(input)
@@ -32,14 +32,14 @@ func (W *TikTokenSplitter) SplitText(input string, maxChunkSize int) []string {
 	var lenCounter int
 
 	for _, word := range words {
-		if lenCounter+W.len(word) > maxChunkSize {
+		if lenCounter+W.Len(word) > maxChunkSize {
 			batches = append(batches, strings.Join(batch, " "))
 			batch = []string{}
 			lenCounter = 0
 		}
 
 		batch = append(batch, word)
-		lenCounter += W.len(word)
+		lenCounter += W.Len(word)
 	}
 
 	if len(batch) > 0 {
@@ -49,6 +49,6 @@ func (W *TikTokenSplitter) SplitText(input string, maxChunkSize int) []string {
 	return batches
 }
 
-func (W *TikTokenSplitter) len(input string) int {
+func (W *TikTokenSplitter) Len(input string) int {
 	return len(W.tkm.Encode(input, nil, nil))
 }

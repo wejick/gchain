@@ -52,7 +52,7 @@ func TestTikTokenSplitter_SplitText(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			W := tkm
-			if got := W.SplitText(tt.args.input, tt.args.maxChunkSize); !reflect.DeepEqual(got, tt.want) {
+			if got := W.SplitText(tt.args.input, tt.args.maxChunkSize, 0); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("TikTokenSplitter.SplitText() = %v, want %v", got, tt.want)
 			}
 		})

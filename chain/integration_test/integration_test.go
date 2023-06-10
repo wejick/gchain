@@ -11,11 +11,13 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/wejick/gochain/chain/conversation"
+	conversationretrieval "github.com/wejick/gochain/chain/conversation_retrieval"
 	"github.com/wejick/gochain/chain/llm_chain"
 	"github.com/wejick/gochain/chain/summarization"
 	"github.com/wejick/gochain/model"
 	_openai "github.com/wejick/gochain/model/openAI"
 	"github.com/wejick/gochain/prompt"
+	"github.com/wejick/gochain/textsplitter"
 )
 
 var llmModel model.LLMModel
@@ -124,4 +126,19 @@ func TestConversationChainChat(t *testing.T) {
 
 	t.Log(output["output"])
 	t.Log(outputString)
+}
+
+func TestConversationRetrievalChainChat(t *testing.T) {
+	memory := []model.ChatMessage{}
+	splitter, err := textsplitter.NewTikTokenSplitter(_openai.GPT3Dot5Turbo0301)
+	assert.NoError(t, err)
+	convoChain := conversationretrieval.NewConversationRetrievalChain(chatModel, memory, splitter, "You're helpful chatbot that answer very concisely", 1000)
+
+	convoChain.AppendToMemory(model.ChatMessage{Role: model.ChatMessageRoleAssistant, Content: "Hi, My name is GioAI"})
+	convoChain.AppendToMemory(model.ChatMessage{Role: model.ChatMessageRoleUser, Content: "Who is the first president of Indonesia?"})
+	convoChain.AppendToMemory(model.ChatMessage{Role: model.ChatMessageRoleAssistant, Content: "The first president of indonesia was Soekarno"})
+
+	response, err := convoChain.Run(context.Background(), map[string]string{"input": "tell me little bit more about soekarno?"}, model.WithTemperature(0.3), model.MaxToken(1000))
+	t.Log(response)
+	assert.NoError(t, err)
 }
