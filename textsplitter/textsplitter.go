@@ -4,5 +4,5 @@ package textsplitter
 
 // TextSplitter split text
 type TextSplitter interface {
-	SplitText(string) []string
+	SplitText(input string, maxChunkSize int, overlap int) []string
 }

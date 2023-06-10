@@ -23,9 +23,9 @@ var embeddingModel model.EmbeddingModel
 var OAIauthToken = os.Getenv("OPENAI_API_KEY")
 
 const (
-	wvhost   = ""
+	wvhost   = "question-testing-twjfnqyp.weaviate.network"
 	wvscheme = "https"
-	wvApiKey = ""
+	wvApiKey = "eDCEmuH6HZ6C8rbnlZFvROUGGyfzsZnwbt8j"
 )
 
 func TestMain(m *testing.M) {
