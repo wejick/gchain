@@ -84,7 +84,7 @@ func (C *ConversationRetrievalChain) Run(ctx context.Context, chat map[string]st
 		}
 	}
 
-	answer, err := C.AnswerFromDoc(ctx, answerOrLookup, retrieverResult, options...)
+	answer, err := C.answerFromDoc(ctx, answerOrLookup, retrieverResult, options...)
 
 	// append answer to memory
 	C.AppendToMemory(inputChat)
@@ -98,6 +98,8 @@ func (C *ConversationRetrievalChain) Run(ctx context.Context, chat map[string]st
 	return
 }
 
+// AnswerOrLookup will return answer if it can, or return lookup query
+// This approach is faster because we will be able to get answer directly when possible
 func (C *ConversationRetrievalChain) AnswerOrLookup(ctx context.Context, input string, options ...func(*model.Option)) (output AnswerOrLookupOutput, err error) {
 	convoHistory := model.FlattenChatMessages(C.memory)
 	instructionPrompt, err := C.instructionTemplate.FormatPrompt(map[string]string{"question": input, "history": convoHistory})
@@ -105,7 +107,6 @@ func (C *ConversationRetrievalChain) AnswerOrLookup(ctx context.Context, input s
 		return
 	}
 
-	// get the answer
 	response, err := C.chatModel.Chat(ctx, []model.ChatMessage{{Role: model.ChatMessageRoleUser, Content: instructionPrompt}}, options...)
 	if err != nil {
 		return
@@ -118,8 +119,10 @@ func (C *ConversationRetrievalChain) AnswerOrLookup(ctx context.Context, input s
 	return
 }
 
-func (C *ConversationRetrievalChain) AnswerFromDoc(ctx context.Context, context AnswerOrLookupOutput, doc string, options ...func(*model.Option)) (output string, err error) {
-	// FIXME cut to maxToken
+// answerFromDoc based on the given context, will retrieve data and use it to answer question using llm
+// this one off query is the key to make this more cost effective and save token usage
+func (C *ConversationRetrievalChain) answerFromDoc(ctx context.Context, context AnswerOrLookupOutput, doc string, options ...func(*model.Option)) (output string, err error) {
+	// cut to max token
 	if len(doc) > C.maxToken {
 		doc = C.textSplitter.SplitText(doc, C.maxToken, 0)[0]
 	}
