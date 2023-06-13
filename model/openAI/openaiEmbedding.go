@@ -2,6 +2,7 @@ package _openai
 
 import (
 	"context"
+	"errors"
 
 	"github.com/sashabaranov/go-openai"
 	goopenai "github.com/sashabaranov/go-openai"
@@ -53,7 +54,7 @@ func (m *OpenAIEmbedModel) EmbedDocuments(documents []string) (embeddings [][]fl
 		})
 
 	if err != nil || len(resp.Data) == 0 {
-		return
+		return nil, errors.New("CreateEmbeddings failed" + err.Error())
 	}
 
 	for _, data := range resp.Data {

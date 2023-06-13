@@ -42,7 +42,7 @@ func (W *WeaviateVectorStore) SearchVector(ctx context.Context, className string
 	fields := []graphql.Field{
 		{Name: "text"},
 	}
-	resp, err := W.client.GraphQL().Get().WithClassName(className).WithNearVector(query).WithFields(fields...).Do(ctx)
+	resp, err := W.client.GraphQL().Get().WithClassName(className).WithNearVector(query).WithFields(fields...).WithLimit(5).Do(ctx)
 	if err != nil {
 		return
 	}

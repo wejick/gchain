@@ -14,6 +14,7 @@ import (
 	conversationretrieval "github.com/wejick/gochain/chain/conversation_retrieval"
 	"github.com/wejick/gochain/chain/llm_chain"
 	"github.com/wejick/gochain/chain/summarization"
+	wikipedia "github.com/wejick/gochain/datastore/wikipedia_retrieval"
 	"github.com/wejick/gochain/model"
 	_openai "github.com/wejick/gochain/model/openAI"
 	"github.com/wejick/gochain/prompt"
@@ -132,7 +133,7 @@ func TestConversationRetrievalChainChat(t *testing.T) {
 	memory := []model.ChatMessage{}
 	splitter, err := textsplitter.NewTikTokenSplitter(_openai.GPT3Dot5Turbo0301)
 	assert.NoError(t, err)
-	convoChain := conversationretrieval.NewConversationRetrievalChain(chatModel, memory, splitter, "You're helpful chatbot that answer very concisely", 1000)
+	convoChain := conversationretrieval.NewConversationRetrievalChain(chatModel, memory, &wikipedia.Wikipedia{}, splitter, "You're helpful chatbot that answer very concisely", 1000)
 
 	convoChain.AppendToMemory(model.ChatMessage{Role: model.ChatMessageRoleAssistant, Content: "Hi, My name is GioAI"})
 	convoChain.AppendToMemory(model.ChatMessage{Role: model.ChatMessageRoleUser, Content: "Who is the first president of Indonesia?"})
