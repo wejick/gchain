@@ -1,30 +1,43 @@
 package conversationretrieval
 
-var instruction = `You have access to this knowledge base (KB) :
+// FIXME : we need a way to make KB lookup more generic
+var instruction = `INSTRUCTION
+You have access to this knowledge base (KB) :
 name | description
 wikipedia | knowledge base to find any general information, I accept standalone keywords as query.
 
-Get the main question from the user
-Format user question to be a standalone keywords that can be lookup
-Distill user intention so we can use the information as context
+CONVERSATION
+{{.history}}
+User: {{.question}}
 
-Any question that can be answered with KB, answer with this json only :
+When responding to me, please output a response in one of two formats:
+
+**Option 1:**
+use this if you can answer directly without KB lookup
+Answer in this following json schema:
+
+{
+"conversation_context":"longer additional context to understand user question",
+"intent":"user intention",
+"answer":"the answer here",
+"lookup":false
+}
+
+**Option 2:**
+Use this if you want to lookup
+Answer in this following json schema:
+
 {
 "kb":"knowledge base name",
 "question":"user question",
 "query":"the question keyword will be put here",
+"conversation_context":"longer additional context to understand user question",
 "intent":"user intention",
+"lookup":true
 }
-
-If no look up necessary, asnwer with this json only :
-{
-"answer":"the answer"
-}
-
-User Question : {{.question}}
 `
 
-var answeringInstruction = `with this context, answer user question concisely
+var answeringInstruction = `with this context, answer user question in kind and concise manner
 {{.context}}
 document: {{.doc}}
 Answer concisely :

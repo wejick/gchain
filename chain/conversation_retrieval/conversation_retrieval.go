@@ -7,17 +7,17 @@ import (
 	"log"
 
 	"github.com/wejick/gochain/datastore"
-	wikipedia "github.com/wejick/gochain/datastore/wikipedia_retrieval"
 	"github.com/wejick/gochain/model"
 	"github.com/wejick/gochain/prompt"
 	"github.com/wejick/gochain/textsplitter"
 )
 
 type AnswerOrLookupOutput struct {
-	Question string
-	Query    string
-	Intent   string
-	Answer   string
+	Question            string `json:"question"`
+	Query               string `json:"query"`
+	Intent              string `json:"intent"`
+	Answer              string `json:"answer"`
+	ConversationContext string `json:"conversation_context"`
 }
 
 // ConversationRetrievalChain conversation with ability to lookup data
@@ -32,7 +32,7 @@ type ConversationRetrievalChain struct {
 }
 
 // FIXME : put some parameter as options
-func NewConversationRetrievalChain(chatModel model.ChatModel, memory []model.ChatMessage, textSplitter textsplitter.TextSplitter, firstSystemPrompt string, maxToken int) (chain *ConversationRetrievalChain) {
+func NewConversationRetrievalChain(chatModel model.ChatModel, memory []model.ChatMessage, retriever datastore.Retrieval, textSplitter textsplitter.TextSplitter, firstSystemPrompt string, maxToken int) (chain *ConversationRetrievalChain) {
 	instructionTemplate, _ := prompt.NewPromptTemplate("instruction", instruction)
 	answerTemplate, _ := prompt.NewPromptTemplate("answer", answeringInstruction)
 	memory = append(memory, model.ChatMessage{Role: model.ChatMessageRoleSystem, Content: firstSystemPrompt})
@@ -42,7 +42,7 @@ func NewConversationRetrievalChain(chatModel model.ChatModel, memory []model.Cha
 	return &ConversationRetrievalChain{
 		chatModel:           chatModel,
 		memory:              memory,
-		retriever:           &wikipedia.Wikipedia{},
+		retriever:           retriever,
 		instructionTemplate: instructionTemplate,
 		answerTemplate:      answerTemplate,
 		maxToken:            maxToken,
@@ -57,6 +57,8 @@ func (C *ConversationRetrievalChain) Run(ctx context.Context, chat map[string]st
 	}
 	output = make(map[string]string)
 
+	inputChat := model.ChatMessage{Role: model.ChatMessageRoleUser, Content: chat["input"]}
+
 	answerOrLookup, err := C.AnswerOrLookup(ctx, chat["input"], options...)
 	if err != nil {
 		return
@@ -64,27 +66,28 @@ func (C *ConversationRetrievalChain) Run(ctx context.Context, chat map[string]st
 
 	// when we get direct answer
 	if answerOrLookup.Answer != "" {
-		C.AppendToMemory(model.ChatMessage{Role: model.ChatMessageRoleUser, Content: chat["input"]})
+		C.AppendToMemory(inputChat)
 		C.AppendToMemory(model.ChatMessage{Role: model.ChatMessageRoleAssistant, Content: answerOrLookup.Answer})
 		output["output"] = answerOrLookup.Answer
 		return
 	}
 
 	// when we need to look up
-	retrieverOutput, err := C.retriever.Search(ctx, "", answerOrLookup.Query)
+	retrieverOutput, err := C.retriever.Search(ctx, "Indonesia", answerOrLookup.Query)
 	if err != nil {
 		return
 	}
 	var retrieverResult string
 	for _, resp := range retrieverOutput {
-		if data, ok := resp.(string); ok {
-			retrieverResult = data
+		if data, ok := resp.(map[string]interface{}); ok {
+			retrieverResult += data["text"].(string)
 		}
 	}
 
-	answer, err := C.AnswerFromDoc(ctx, answerOrLookup, retrieverResult, options...)
+	answer, err := C.answerFromDoc(ctx, answerOrLookup, retrieverResult, options...)
 
 	// append answer to memory
+	C.AppendToMemory(inputChat)
 	C.AppendToMemory(model.ChatMessage{Role: model.ChatMessageRoleAssistant, Content: answer})
 	if err != nil {
 		return
@@ -95,45 +98,45 @@ func (C *ConversationRetrievalChain) Run(ctx context.Context, chat map[string]st
 	return
 }
 
+// AnswerOrLookup will return answer if it can, or return lookup query
+// This approach is faster because we will be able to get answer directly when possible
 func (C *ConversationRetrievalChain) AnswerOrLookup(ctx context.Context, input string, options ...func(*model.Option)) (output AnswerOrLookupOutput, err error) {
-	instructionPrompt, err := C.instructionTemplate.FormatPrompt(map[string]string{"question": input})
+	convoHistory := model.FlattenChatMessages(C.memory)
+	instructionPrompt, err := C.instructionTemplate.FormatPrompt(map[string]string{"question": input, "history": convoHistory})
 	if err != nil {
 		return
 	}
 
-	// copy memory
-	contextMem := C.memory[:]
-	// add instruction and user query
-	contextMem = append(contextMem, model.ChatMessage{Role: model.ChatMessageRoleUser, Content: instructionPrompt})
-	// get the answer
-	response, err := C.chatModel.Chat(ctx, contextMem, options...)
+	response, err := C.chatModel.Chat(ctx, []model.ChatMessage{{Role: model.ChatMessageRoleUser, Content: instructionPrompt}}, options...)
 	if err != nil {
 		return
 	}
 	errUnmarshall := json.Unmarshal([]byte(response.Content), &output)
-	if errUnmarshall == nil {
+	if errUnmarshall != nil {
 		return
 	}
-
-	output.Answer = response.Content
 
 	return
 }
 
-func (C *ConversationRetrievalChain) AnswerFromDoc(ctx context.Context, context AnswerOrLookupOutput, doc string, options ...func(*model.Option)) (output string, err error) {
-	// FIXME cut to maxToken
+// answerFromDoc based on the given context, will retrieve data and use it to answer question using llm
+// this one off query is the key to make this more cost effective and save token usage
+func (C *ConversationRetrievalChain) answerFromDoc(ctx context.Context, context AnswerOrLookupOutput, doc string, options ...func(*model.Option)) (output string, err error) {
+	// cut to max token
 	if len(doc) > C.maxToken {
 		doc = C.textSplitter.SplitText(doc, C.maxToken, 0)[0]
 	}
 
 	b, err := json.Marshal(context)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return
 	}
 
 	instructionPrompt, err := C.answerTemplate.FormatPrompt(map[string]string{"doc": doc, "context": string(b)})
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
+		return
 	}
 	message := model.ChatMessage{
 		Role:    model.ChatMessageRoleUser,
