@@ -1,5 +1,6 @@
 package conversationretrieval
 
+// FIXME : we need a way to make KB lookup more generic
 var instruction = `INSTRUCTION
 You have access to this knowledge base (KB) :
 name | description
