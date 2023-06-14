@@ -27,7 +27,7 @@ type VectorStore interface {
 	SearchVector(ctx context.Context, indexName string, vector []float32) ([]interface{}, error)
 }
 
-type Retrieval interface {
+type Retriever interface {
 	// Search using a query string
 	Search(ctx context.Context, indexName string, query string) ([]interface{}, error)
 }

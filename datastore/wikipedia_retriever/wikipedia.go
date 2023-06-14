@@ -8,7 +8,7 @@ import (
 	"github.com/wejick/gochain/datastore"
 )
 
-var _ datastore.Retrieval = &Wikipedia{}
+var _ datastore.Retriever = &Wikipedia{}
 
 type Wikipedia struct {
 }

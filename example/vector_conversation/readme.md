@@ -1,4 +1,4 @@
-# Example of using conversation retrieval
+# Example of using conversational retrieval
 There are 2 part of this example, the indexer and chat interface.
 
 1. On the indexer, we index text of Indonesia and History of Indonesia wikipedia page. Put it to weaviate vector db.

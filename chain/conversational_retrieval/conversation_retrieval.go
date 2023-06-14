@@ -1,4 +1,4 @@
-package conversationretrieval
+package conversational_retrieval
 
 import (
 	"context"
@@ -20,11 +20,11 @@ type AnswerOrLookupOutput struct {
 	ConversationContext string `json:"conversation_context"`
 }
 
-// ConversationRetrievalChain conversation with ability to lookup data
-type ConversationRetrievalChain struct {
+// ConversationalRetrievalChain conversation with ability to lookup data
+type ConversationalRetrievalChain struct {
 	chatModel           model.ChatModel // only allow using ChatModel
 	memory              []model.ChatMessage
-	retriever           datastore.Retrieval
+	retriever           datastore.Retriever
 	textSplitter        textsplitter.TextSplitter
 	instructionTemplate *prompt.PromptTemplate
 	answerTemplate      *prompt.PromptTemplate
@@ -32,14 +32,14 @@ type ConversationRetrievalChain struct {
 }
 
 // FIXME : put some parameter as options
-func NewConversationRetrievalChain(chatModel model.ChatModel, memory []model.ChatMessage, retriever datastore.Retrieval, textSplitter textsplitter.TextSplitter, firstSystemPrompt string, maxToken int) (chain *ConversationRetrievalChain) {
+func NewConversationalRetrievalChain(chatModel model.ChatModel, memory []model.ChatMessage, retriever datastore.Retriever, textSplitter textsplitter.TextSplitter, firstSystemPrompt string, maxToken int) (chain *ConversationalRetrievalChain) {
 	instructionTemplate, _ := prompt.NewPromptTemplate("instruction", instruction)
 	answerTemplate, _ := prompt.NewPromptTemplate("answer", answeringInstruction)
 	memory = append(memory, model.ChatMessage{Role: model.ChatMessageRoleSystem, Content: firstSystemPrompt})
 	if maxToken == 0 {
 		maxToken = 1000
 	}
-	return &ConversationRetrievalChain{
+	return &ConversationalRetrievalChain{
 		chatModel:           chatModel,
 		memory:              memory,
 		retriever:           retriever,
@@ -51,7 +51,7 @@ func NewConversationRetrievalChain(chatModel model.ChatModel, memory []model.Cha
 }
 
 // Run expect chat["input"] as input, and put the result to output["output"]
-func (C *ConversationRetrievalChain) Run(ctx context.Context, chat map[string]string, options ...func(*model.Option)) (output map[string]string, err error) {
+func (C *ConversationalRetrievalChain) Run(ctx context.Context, chat map[string]string, options ...func(*model.Option)) (output map[string]string, err error) {
 	if _, ok := chat["input"]; !ok {
 		return output, errors.New("input[\"input\"] is not specified")
 	}
@@ -100,7 +100,7 @@ func (C *ConversationRetrievalChain) Run(ctx context.Context, chat map[string]st
 
 // AnswerOrLookup will return answer if it can, or return lookup query
 // This approach is faster because we will be able to get answer directly when possible
-func (C *ConversationRetrievalChain) AnswerOrLookup(ctx context.Context, input string, options ...func(*model.Option)) (output AnswerOrLookupOutput, err error) {
+func (C *ConversationalRetrievalChain) AnswerOrLookup(ctx context.Context, input string, options ...func(*model.Option)) (output AnswerOrLookupOutput, err error) {
 	convoHistory := model.FlattenChatMessages(C.memory)
 	instructionPrompt, err := C.instructionTemplate.FormatPrompt(map[string]string{"question": input, "history": convoHistory})
 	if err != nil {
@@ -121,7 +121,7 @@ func (C *ConversationRetrievalChain) AnswerOrLookup(ctx context.Context, input s
 
 // answerFromDoc based on the given context, will retrieve data and use it to answer question using llm
 // this one off query is the key to make this more cost effective and save token usage
-func (C *ConversationRetrievalChain) answerFromDoc(ctx context.Context, context AnswerOrLookupOutput, doc string, options ...func(*model.Option)) (output string, err error) {
+func (C *ConversationalRetrievalChain) answerFromDoc(ctx context.Context, context AnswerOrLookupOutput, doc string, options ...func(*model.Option)) (output string, err error) {
 	// cut to max token
 	if len(doc) > C.maxToken {
 		doc = C.textSplitter.SplitText(doc, C.maxToken, 0)[0]
@@ -153,6 +153,6 @@ func (C *ConversationRetrievalChain) answerFromDoc(ctx context.Context, context 
 }
 
 // AppendMemory to add conversation to the memory
-func (C *ConversationRetrievalChain) AppendToMemory(message model.ChatMessage) {
+func (C *ConversationalRetrievalChain) AppendToMemory(message model.ChatMessage) {
 	C.memory = append(C.memory, message)
 }

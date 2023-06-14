@@ -12,7 +12,7 @@ import (
 	"github.com/sashabaranov/go-openai"
 	"github.com/stretchr/testify/assert"
 	weaviateVS "github.com/wejick/gochain/datastore/weaviate_vector"
-	wikipedia "github.com/wejick/gochain/datastore/wikipedia_retrieval"
+	wikipedia "github.com/wejick/gochain/datastore/wikipedia_retriever"
 	"github.com/wejick/gochain/model"
 	_openai "github.com/wejick/gochain/model/openAI"
 )

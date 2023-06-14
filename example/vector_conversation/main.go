@@ -10,7 +10,7 @@ import (
 	"os"
 
 	"github.com/sashabaranov/go-openai"
-	conversationretrieval "github.com/wejick/gochain/chain/conversation_retrieval"
+	"github.com/wejick/gochain/chain/conversational_retrieval"
 	weaviateVS "github.com/wejick/gochain/datastore/weaviate_vector"
 	"github.com/wejick/gochain/model"
 	_openai "github.com/wejick/gochain/model/openAI"
@@ -71,7 +71,7 @@ func main() {
 }
 
 func Chatting(memory []model.ChatMessage) {
-	chain := conversationretrieval.NewConversationRetrievalChain(chatModel, memory, wvClient, textplitter, "", 1000)
+	chain := conversational_retrieval.NewConversationalRetrievalChain(chatModel, memory, wvClient, textplitter, "", 1000)
 	fmt.Println("AI : How can I help you, I know many things about indonesia")
 	scanner := bufio.NewScanner(os.Stdin)
 	for {
