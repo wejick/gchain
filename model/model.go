@@ -1,6 +1,8 @@
 package model
 
-import "context"
+import (
+	"context"
+)
 
 //go:generate moq -out model_moq.go . LLMModel
 type LLMModel interface {
@@ -8,8 +10,10 @@ type LLMModel interface {
 }
 
 type Option struct {
-	Temperature float32
-	MaxToken    int
+	Temperature      float32
+	MaxToken         int
+	IsStreaming      bool
+	StreamingChannel chan ChatMessage // non chat model can also use this
 }
 
 func WithTemperature(temp float32) func(*Option) {
@@ -18,9 +22,21 @@ func WithTemperature(temp float32) func(*Option) {
 	}
 }
 
-func MaxToken(maxToken int) func(*Option) {
+func WithMaxToken(maxToken int) func(*Option) {
 	return func(o *Option) {
 		o.MaxToken = maxToken
+	}
+}
+
+func WithStreamingChannel(streamingChannel chan ChatMessage) func(*Option) {
+	return func(o *Option) {
+		o.StreamingChannel = streamingChannel
+	}
+}
+
+func WithIsStreaming(isStreaming bool) func(*Option) {
+	return func(o *Option) {
+		o.IsStreaming = isStreaming
 	}
 }
 
@@ -28,7 +44,6 @@ func MaxToken(maxToken int) func(*Option) {
 type ChatModel interface {
 	LLMModel
 	Chat(ctx context.Context, messages []ChatMessage, options ...func(*Option)) (ChatMessage, error)
-	ChatStreaming(ctx context.Context, prompt string, options ...func(*Option)) (string, error)
 }
 
 type ChatMessage struct {

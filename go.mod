@@ -4,10 +4,10 @@ go 1.20
 
 require (
 	github.com/pkoukk/tiktoken-go v0.1.2
-	github.com/sashabaranov/go-openai v1.9.5
+	github.com/sashabaranov/go-openai v1.10.1
 	github.com/stretchr/testify v1.8.3
 	github.com/trietmn/go-wiki v1.0.1
-	github.com/weaviate/weaviate v1.19.0
+	github.com/weaviate/weaviate v1.19.7
 	github.com/weaviate/weaviate-go-client/v4 v4.8.1
 )
 

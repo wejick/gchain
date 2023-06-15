@@ -2,6 +2,9 @@ package _openai
 
 import (
 	"context"
+	"errors"
+	"io"
+	"log"
 
 	goopenai "github.com/sashabaranov/go-openai"
 	model "github.com/wejick/gochain/model"
@@ -55,6 +58,12 @@ func (O *OpenAIChatModel) Chat(ctx context.Context, messages []model.ChatMessage
 		opt(&opts)
 	}
 
+	// call chatStreaming if it's streaming chat
+	if opts.IsStreaming && opts.StreamingChannel != nil {
+		output, err = O.chatStreaming(ctx, messages, options...)
+		return
+	}
+
 	request := goopenai.ChatCompletionRequest{
 		Model:       goopenai.GPT3Dot5Turbo,
 		MaxTokens:   opts.MaxToken,
@@ -76,11 +85,49 @@ func (O *OpenAIChatModel) Chat(ctx context.Context, messages []model.ChatMessage
 	return
 }
 
-// Chat call chat completion in streaming mode
-func (O *OpenAIChatModel) ChatStreaming(ctx context.Context, prompt string, options ...func(*model.Option)) (output string, err error) {
+// chatStreaming call chat completion in streaming mode
+// this is a blocking function that will return after all response is completely streamed
+// to get the streaming loop streamingCallbackFunc until it's finished
+func (O *OpenAIChatModel) chatStreaming(ctx context.Context, messages []model.ChatMessage, options ...func(*model.Option)) (output model.ChatMessage, err error) {
 	opts := model.Option{}
 	for _, opt := range options {
 		opt(&opts)
+	}
+
+	request := goopenai.ChatCompletionRequest{
+		Model:       goopenai.GPT3Dot5Turbo,
+		MaxTokens:   opts.MaxToken,
+		Temperature: opts.Temperature,
+		Messages:    convertMessagesToOai(messages),
+		Stream:      true,
+	}
+
+	// reset the channel
+	stream, err := O.c.CreateChatCompletionStream(ctx, request)
+	if err != nil {
+		return
+	}
+	defer stream.Close()
+	for {
+		response, errStrea := stream.Recv()
+		if errors.Is(errStrea, io.EOF) {
+			opts.StreamingChannel <- model.ChatMessage{Role: "signal", Content: "finished"}
+			break
+		}
+
+		if errStrea != nil {
+			log.Printf("Stream error: %v\n", err)
+			return
+		}
+
+		if len(response.Choices) > 0 {
+			content := response.Choices[0].Delta.Content
+			opts.StreamingChannel <- model.ChatMessage{Role: goopenai.ChatMessageRoleAssistant, Content: content}
+
+			// update final output
+			output.Content += content
+			output.Role = goopenai.ChatMessageRoleAssistant
+		}
 	}
 
 	return
