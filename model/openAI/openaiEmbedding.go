@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 
-	"github.com/sashabaranov/go-openai"
 	goopenai "github.com/sashabaranov/go-openai"
 )
 
@@ -14,7 +13,7 @@ type OpenAIEmbedModel struct {
 }
 
 // NewOpenAIEmbedModel return new openAI Model instance
-func NewOpenAIEmbedModel(authToken string, orgID string, modelName openai.EmbeddingModel) (model *OpenAIEmbedModel) {
+func NewOpenAIEmbedModel(authToken string, orgID string, modelName goopenai.EmbeddingModel) (model *OpenAIEmbedModel) {
 	var client *goopenai.Client
 	if orgID != "" {
 		client = goopenai.NewClient(authToken)
@@ -48,7 +47,7 @@ func (m *OpenAIEmbedModel) EmbedQuery(input string) (embedding []float32, err er
 func (m *OpenAIEmbedModel) EmbedDocuments(documents []string) (embeddings [][]float32, err error) {
 	resp, err := m.c.CreateEmbeddings(
 		context.Background(),
-		openai.EmbeddingRequest{
+		goopenai.EmbeddingRequest{
 			Input: documents,
 			Model: m.model,
 		})

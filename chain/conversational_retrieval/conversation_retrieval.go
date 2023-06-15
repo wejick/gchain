@@ -12,7 +12,7 @@ import (
 	"github.com/wejick/gochain/textsplitter"
 )
 
-type AnswerOrLookupOutput struct {
+type answerOrLookupOutput struct {
 	Question            string `json:"question"`
 	Query               string `json:"query"`
 	Intent              string `json:"intent"`
@@ -31,8 +31,10 @@ type ConversationalRetrievalChain struct {
 	maxToken            int
 }
 
-// FIXME : put some parameter as options
-func NewConversationalRetrievalChain(chatModel model.ChatModel, memory []model.ChatMessage, retriever datastore.Retriever, textSplitter textsplitter.TextSplitter, firstSystemPrompt string, maxToken int) (chain *ConversationalRetrievalChain) {
+func NewConversationalRetrievalChain(chatModel model.ChatModel, memory []model.ChatMessage,
+	retriever datastore.Retriever, textSplitter textsplitter.TextSplitter,
+	firstSystemPrompt string, maxToken int) (chain *ConversationalRetrievalChain) {
+
 	instructionTemplate, _ := prompt.NewPromptTemplate("instruction", instruction)
 	answerTemplate, _ := prompt.NewPromptTemplate("answer", answeringInstruction)
 	memory = append(memory, model.ChatMessage{Role: model.ChatMessageRoleSystem, Content: firstSystemPrompt})
@@ -100,7 +102,7 @@ func (C *ConversationalRetrievalChain) Run(ctx context.Context, chat map[string]
 
 // AnswerOrLookup will return answer if it can, or return lookup query
 // This approach is faster because we will be able to get answer directly when possible
-func (C *ConversationalRetrievalChain) AnswerOrLookup(ctx context.Context, input string, options ...func(*model.Option)) (output AnswerOrLookupOutput, err error) {
+func (C *ConversationalRetrievalChain) AnswerOrLookup(ctx context.Context, input string, options ...func(*model.Option)) (output answerOrLookupOutput, err error) {
 	convoHistory := model.FlattenChatMessages(C.memory)
 	instructionPrompt, err := C.instructionTemplate.FormatPrompt(map[string]string{"question": input, "history": convoHistory})
 	if err != nil {
@@ -121,7 +123,7 @@ func (C *ConversationalRetrievalChain) AnswerOrLookup(ctx context.Context, input
 
 // answerFromDoc based on the given context, will retrieve data and use it to answer question using llm
 // this one off query is the key to make this more cost effective and save token usage
-func (C *ConversationalRetrievalChain) answerFromDoc(ctx context.Context, context AnswerOrLookupOutput, doc string, options ...func(*model.Option)) (output string, err error) {
+func (C *ConversationalRetrievalChain) answerFromDoc(ctx context.Context, context answerOrLookupOutput, doc string, options ...func(*model.Option)) (output string, err error) {
 	// cut to max token
 	if len(doc) > C.maxToken {
 		doc = C.textSplitter.SplitText(doc, C.maxToken, 0)[0]

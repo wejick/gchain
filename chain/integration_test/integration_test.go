@@ -91,7 +91,7 @@ func TestMapReduceSummarizationChain(t *testing.T) {
 	I was looking at Bomb Jack boards on ebay and pondering how they had enough fill-rate to draw 24 16x16 sprites and have the option for some to use 32x32 mode as well. A friend and I were discussing the clock speed and fill-rate while trying to deduce the operation of the hardware just by inspecting the hand drawn schematics, as you do.
 	In the end to get some clarity on the sprite plotting specifically I started to transcribe what was thought to be the sprite logic portion of the schematic into Proteus, since it can simulate digital electronics really well.`
 
-	output, err := chain.Run(context.Background(), testDoc, model.MaxToken(200))
+	output, err := chain.Run(context.Background(), testDoc, model.WithMaxToken(200))
 	assert.NoError(t, err, "error Run(context.Background(), testDoc, model.MaxToken(200))")
 
 	t.Log(output)
@@ -120,10 +120,10 @@ func TestConversationChainChat(t *testing.T) {
 	convoChain := conversation.NewConversationChain(chatModel, memory, "You're helpful chatbot that answer very concisely")
 
 	convoChain.AppendToMemory(model.ChatMessage{Role: model.ChatMessageRoleAssistant, Content: "Hi, My name is GioAI"})
-	output, err := convoChain.Run(context.Background(), map[string]string{"input": "what's your name?"}, model.WithTemperature(0), model.MaxToken(100))
+	output, err := convoChain.Run(context.Background(), map[string]string{"input": "what's your name?"}, model.WithTemperature(0), model.WithMaxToken(100))
 	assert.NoError(t, err)
 
-	outputString, err := convoChain.SimpleRun(context.Background(), "so your name is gioAI", model.WithTemperature(0), model.MaxToken(100))
+	outputString, err := convoChain.SimpleRun(context.Background(), "so your name is gioAI", model.WithTemperature(0), model.WithMaxToken(100))
 
 	t.Log(output["output"])
 	t.Log(outputString)
@@ -139,7 +139,7 @@ func TestConversationalRetrievalChainChat(t *testing.T) {
 	convoChain.AppendToMemory(model.ChatMessage{Role: model.ChatMessageRoleUser, Content: "Who is the first president of Indonesia?"})
 	convoChain.AppendToMemory(model.ChatMessage{Role: model.ChatMessageRoleAssistant, Content: "The first president of indonesia was Soekarno"})
 
-	response, err := convoChain.Run(context.Background(), map[string]string{"input": "tell me little bit more about soekarno?"}, model.WithTemperature(0.3), model.MaxToken(1000))
+	response, err := convoChain.Run(context.Background(), map[string]string{"input": "tell me little bit more about soekarno?"}, model.WithTemperature(0.3), model.WithMaxToken(1000))
 	t.Log(response)
 	assert.NoError(t, err)
 }
