@@ -1,8 +1,18 @@
 # GoChain
 Langchain inspired framework to work with LLM in golang
 
-## Notice
-1. Eventhough GoChain happily use many Langchain concept however don't expect the same behavior and as this is not reimplementation.
+## Example
+```golang
+llmModel = _openai.NewOpenAIModel(authToken, "", "text-davinci-003")
+chain, err := llm_chain.NewLLMChain(llmModel, nil)
+if err != nil {
+    //handle error
+}
+outputMap, err := chain.Run(context.Background(), map[string]string{"input": "Indonesia Capital is Jakarta\nJakarta is the capital of "})
+fmt.Println(outputMap["output"])
+```
+More example in the [example](./example/) folder
 
-## License
-Don't use this
+## Notice
+1. Don't use it if you have better option
+1. GoChain priority is golang idiomatic. So eventhough it happily use many langchain concept, don't expect exactly the same behavior as this is not reimplementation.
