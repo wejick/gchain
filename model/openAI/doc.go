@@ -1,5 +1,3 @@
-package _openai
-
 /*
 To use ChatStreaming, call it as go routine and then listen to the channel until it's closed
 
@@ -18,3 +16,4 @@ Example of ChatStreaming usage :
 		}
 	}
 */
+package _openai
