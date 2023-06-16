@@ -7,18 +7,20 @@ import (
 	"log"
 
 	goopenai "github.com/sashabaranov/go-openai"
+	"github.com/wejick/gochain/callback"
 	model "github.com/wejick/gochain/model"
 )
 
 var _ model.LLMModel = &OpenAIChatModel{}
 
 type OpenAIChatModel struct {
-	c         *goopenai.Client
-	modelName string
+	c               *goopenai.Client
+	modelName       string
+	callbackManager *callback.Manager
 }
 
 // NewOpenAIChatModel return new openAI Model instance
-func NewOpenAIChatModel(authToken string, orgID string, modelName string) (model *OpenAIChatModel) {
+func NewOpenAIChatModel(authToken string, orgID string, modelName string, callbackManager *callback.Manager, verbose bool) (llm *OpenAIChatModel) {
 	var client *goopenai.Client
 	if orgID != "" {
 		client = goopenai.NewClient(authToken)
@@ -28,9 +30,14 @@ func NewOpenAIChatModel(authToken string, orgID string, modelName string) (model
 		client = goopenai.NewClientWithConfig(config)
 	}
 
-	model = &OpenAIChatModel{
-		c:         client,
-		modelName: modelName,
+	llm = &OpenAIChatModel{
+		c:               client,
+		modelName:       modelName,
+		callbackManager: callbackManager,
+	}
+
+	if verbose {
+		llm.callbackManager.RegisterCallback(model.CallbackModelEnd, callback.VerboseCallback)
 	}
 
 	return
@@ -58,6 +65,15 @@ func (O *OpenAIChatModel) Chat(ctx context.Context, messages []model.ChatMessage
 		opt(&opts)
 	}
 
+	// Trigger start callback
+	flattenMessages := model.FlattenChatMessages(messages)
+	O.callbackManager.TriggerEvent(ctx, model.CallbackModelStart, callback.CallbackData{
+		EventName:    model.CallbackModelStart,
+		FunctionName: "OpenAIChatModel.Chat",
+		Input:        map[string]string{"input": flattenMessages},
+		Output:       map[string]string{"output": output.String()},
+	})
+
 	// call chatStreaming if it's streaming chat
 	if opts.IsStreaming && opts.StreamingChannel != nil {
 		output, err = O.chatStreaming(ctx, messages, options...)
@@ -81,6 +97,14 @@ func (O *OpenAIChatModel) Chat(ctx context.Context, messages []model.ChatMessage
 			Content: response.Choices[0].Message.Content,
 		}
 	}
+
+	// Trigger end callback
+	O.callbackManager.TriggerEvent(ctx, model.CallbackModelEnd, callback.CallbackData{
+		EventName:    model.CallbackModelEnd,
+		FunctionName: "OpenAIChatModel.Chat",
+		Input:        map[string]string{"input": flattenMessages},
+		Output:       map[string]string{"output": output.String()},
+	})
 
 	return
 }
@@ -129,6 +153,14 @@ func (O *OpenAIChatModel) chatStreaming(ctx context.Context, messages []model.Ch
 			output.Role = goopenai.ChatMessageRoleAssistant
 		}
 	}
+
+	// Trigger end callback
+	O.callbackManager.TriggerEvent(ctx, model.CallbackModelEnd, callback.CallbackData{
+		EventName:    model.CallbackModelEnd,
+		FunctionName: "OpenAIChatModel.Chat",
+		Input:        map[string]string{"input": model.FlattenChatMessages(messages)},
+		Output:       map[string]string{"output": output.String()},
+	})
 
 	return
 }

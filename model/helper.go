@@ -6,9 +6,7 @@ func FlattenChatMessages(messages []ChatMessage) string {
 	var result strings.Builder
 
 	for _, message := range messages {
-		result.WriteString(message.Role)
-		result.WriteString(": ")
-		result.WriteString(message.Content)
+		result.WriteString(message.String())
 		result.WriteString("\n")
 	}
 

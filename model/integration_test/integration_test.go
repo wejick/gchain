@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/sashabaranov/go-openai"
+	"github.com/wejick/gochain/callback"
 	"github.com/wejick/gochain/model"
 	_openai "github.com/wejick/gochain/model/openAI"
 )
@@ -20,7 +21,7 @@ func TestMain(m *testing.M) {
 	fmt.Println("Running integration tests...")
 
 	var authToken = os.Getenv("OPENAI_API_KEY")
-	llmModel = _openai.NewOpenAIModel(authToken, "", "text-ada-001")
+	llmModel = _openai.NewOpenAIModel(authToken, "", "text-ada-001", callback.NewManager(), true)
 
 	exitCode := m.Run()
 
@@ -30,7 +31,7 @@ func TestMain(m *testing.M) {
 var authToken = os.Getenv("OPENAI_API_KEY")
 
 func TestOpenAICall(t *testing.T) {
-	var testModel = _openai.NewOpenAIModel(authToken, "", "text-ada-001")
+	var testModel = _openai.NewOpenAIModel(authToken, "", "text-ada-001", callback.NewManager(), true)
 	output, err := testModel.Call(context.Background(), "we are us, we are us, we are ", model.WithTemperature(0))
 	if err != nil {
 		t.Error(err)
@@ -40,7 +41,7 @@ func TestOpenAICall(t *testing.T) {
 }
 
 func TestOpenAIChat(t *testing.T) {
-	var testModel = _openai.NewOpenAIChatModel(authToken, "", _openai.GPT3Dot5Turbo0301)
+	var testModel = _openai.NewOpenAIChatModel(authToken, "", _openai.GPT3Dot5Turbo0301, callback.NewManager(), false)
 
 	testMessages := []model.ChatMessage{
 		{Role: model.ChatMessageRoleUser, Content: "Answer in short and directly, Jakarta is capital city of what ?"},
@@ -54,7 +55,7 @@ func TestOpenAIChat(t *testing.T) {
 }
 
 func TestOpenAIChatCall(t *testing.T) {
-	var testModel = _openai.NewOpenAIChatModel(authToken, "", _openai.GPT3Dot5Turbo0301)
+	var testModel = _openai.NewOpenAIChatModel(authToken, "", _openai.GPT3Dot5Turbo0301, callback.NewManager(), false)
 
 	output, err := testModel.Call(context.Background(), "Answer in short and directly, Jakarta is capital city of what ?")
 	if err != nil {

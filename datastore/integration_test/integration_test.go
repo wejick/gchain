@@ -11,6 +11,7 @@ import (
 
 	"github.com/sashabaranov/go-openai"
 	"github.com/stretchr/testify/assert"
+	"github.com/wejick/gochain/callback"
 	weaviateVS "github.com/wejick/gochain/datastore/weaviate_vector"
 	wikipedia "github.com/wejick/gochain/datastore/wikipedia_retriever"
 	"github.com/wejick/gochain/model"
@@ -31,7 +32,7 @@ const (
 func TestMain(m *testing.M) {
 	fmt.Println("Running integration tests...")
 
-	llmModel = _openai.NewOpenAIModel(OAIauthToken, "", "text-ada-001")
+	llmModel = _openai.NewOpenAIModel(OAIauthToken, "", "text-ada-001", callback.NewManager(), true)
 	embeddingModel = _openai.NewOpenAIEmbedModel(OAIauthToken, "", openai.AdaEmbeddingV2)
 
 	exitCode := m.Run()

@@ -31,9 +31,14 @@ type ConversationalRetrievalChain struct {
 	maxToken            int
 }
 
-func NewConversationalRetrievalChain(chatModel model.ChatModel, memory []model.ChatMessage,
-	retriever datastore.Retriever, textSplitter textsplitter.TextSplitter,
-	firstSystemPrompt string, maxToken int) (chain *ConversationalRetrievalChain) {
+func NewConversationalRetrievalChain(
+	chatModel model.ChatModel,
+	memory []model.ChatMessage,
+	retriever datastore.Retriever,
+	textSplitter textsplitter.TextSplitter,
+	firstSystemPrompt string,
+	maxToken int,
+) (chain *ConversationalRetrievalChain) {
 
 	instructionTemplate, _ := prompt.NewPromptTemplate("instruction", instruction)
 	answerTemplate, _ := prompt.NewPromptTemplate("answer", answeringInstruction)

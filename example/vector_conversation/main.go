@@ -10,6 +10,7 @@ import (
 	"os"
 
 	"github.com/sashabaranov/go-openai"
+	"github.com/wejick/gochain/callback"
 	"github.com/wejick/gochain/chain/conversational_retrieval"
 	weaviateVS "github.com/wejick/gochain/datastore/weaviate_vector"
 	"github.com/wejick/gochain/model"
@@ -44,7 +45,7 @@ func Init() (err error) {
 		return
 	}
 	embeddingModel := _openai.NewOpenAIEmbedModel(OAIauthToken, "", openai.AdaEmbeddingV2)
-	chatModel = _openai.NewOpenAIChatModel(OAIauthToken, "", _openai.GPT3Dot5Turbo0301)
+	chatModel = _openai.NewOpenAIChatModel(OAIauthToken, "", _openai.GPT3Dot5Turbo0301, callback.NewManager(), false)
 
 	wvClient, err = weaviateVS.NewWeaviateVectorStore(wvhost, wvscheme, wvApiKey, embeddingModel, nil)
 	if err != nil {

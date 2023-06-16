@@ -4,16 +4,18 @@ import (
 	"context"
 
 	goopenai "github.com/sashabaranov/go-openai"
+	"github.com/wejick/gochain/callback"
 	model "github.com/wejick/gochain/model"
 )
 
 type OpenAIModel struct {
-	c         *goopenai.Client
-	modelName string
+	c               *goopenai.Client
+	modelName       string
+	callbackManager *callback.Manager
 }
 
 // NewOpenAIModel return new openAI Model instance
-func NewOpenAIModel(authToken string, orgID string, modelName string) (model *OpenAIModel) {
+func NewOpenAIModel(authToken string, orgID string, modelName string, callbackManager *callback.Manager, verbose bool) (llm *OpenAIModel) {
 	var client *goopenai.Client
 	if orgID != "" {
 		client = goopenai.NewClient(authToken)
@@ -23,9 +25,14 @@ func NewOpenAIModel(authToken string, orgID string, modelName string) (model *Op
 		client = goopenai.NewClientWithConfig(config)
 	}
 
-	model = &OpenAIModel{
-		c:         client,
-		modelName: modelName,
+	llm = &OpenAIModel{
+		c:               client,
+		modelName:       modelName,
+		callbackManager: callbackManager,
+	}
+
+	if verbose {
+		llm.callbackManager.RegisterCallback(model.CallbackModelEnd, callback.VerboseCallback)
 	}
 
 	return
@@ -44,6 +51,20 @@ func (O *OpenAIModel) Call(ctx context.Context, prompt string, options ...func(*
 		MaxTokens:   opts.MaxToken,
 		Prompt:      prompt,
 	}
+
+	// Trigger start and end callback
+	O.callbackManager.TriggerEvent(ctx, model.CallbackModelStart, callback.CallbackData{
+		EventName:    model.CallbackModelStart,
+		FunctionName: "OpenAIModel.Call",
+		Input:        map[string]string{"input": prompt},
+		Output:       map[string]string{"output": output},
+	})
+	defer O.callbackManager.TriggerEvent(ctx, model.CallbackModelEnd, callback.CallbackData{
+		EventName:    model.CallbackModelEnd,
+		FunctionName: "OpenAIModel.Call",
+		Input:        map[string]string{"input": prompt},
+		Output:       map[string]string{"output": output},
+	})
 
 	response, err := O.c.CreateCompletion(ctx, request)
 	if err != nil {
