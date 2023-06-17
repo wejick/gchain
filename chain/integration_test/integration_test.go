@@ -30,7 +30,7 @@ func TestMain(m *testing.M) {
 	// Perform any setup or initialization here
 
 	var authToken = os.Getenv("OPENAI_API_KEY")
-	llmModel = _openai.NewOpenAIModel(authToken, "", "text-davinci-003", callback.NewManager(), true)
+	llmModel = _openai.NewOpenAIModel(authToken, "", "text-davinci-003", callback.NewManager(), false)
 
 	chatModel = _openai.NewOpenAIChatModel(authToken, "", _openai.GPT3Dot5Turbo0301, callback.NewManager(), false)
 
@@ -81,7 +81,9 @@ func TestMapReduceSummarizationChain(t *testing.T) {
 	llmchain, err := llm_chain.NewLLMChain(llmModel, nil)
 	assert.NoError(t, err, "NewLLMChain")
 
-	chain, err := summarization.NewMapReduceSummarizationChain(llmchain, "", "", "text", 1000)
+	splitter, err := textsplitter.NewTikTokenSplitter("")
+	assert.NoError(t, err, "NewTikTokenSplitter")
+	chain, err := summarization.NewMapReduceSummarizationChain(llmchain, "", "", "text", splitter, 1000)
 	assert.NoError(t, err, "error NewMapReduceSummarizationChain")
 
 	testDoc := make(map[string]string)

@@ -9,6 +9,7 @@ import (
 	"github.com/wejick/gochain/chain/llm_chain"
 	"github.com/wejick/gochain/model"
 	"github.com/wejick/gochain/prompt"
+	"github.com/wejick/gochain/textsplitter"
 )
 
 const (
@@ -28,7 +29,8 @@ var _ chain.BaseChain = &MapReduceSummarizationChain{}
 // put empty "" string to use default prompt
 // put 0 to use default maxToken
 func NewMapReduceSummarizationChain(llmChain *llm_chain.LLMChain, mapPromptString string, reducePromptString string,
-	promptTemplateKey string, maxToken int) (m *MapReduceSummarizationChain, err error) {
+	promptTemplateKey string,
+	splitter textsplitter.TextSplitter, maxToken int) (m *MapReduceSummarizationChain, err error) {
 
 	var promptTemplateMap, promptTemplateReduce *prompt.PromptTemplate
 
@@ -52,7 +54,7 @@ func NewMapReduceSummarizationChain(llmChain *llm_chain.LLMChain, mapPromptStrin
 	}
 
 	mapReduceCombineDocument := combine_document.NewMapReduceCombineDocument(promptTemplateMap,
-		promptTemplateReduce, promptTemplateKey, llmChain, maxToken)
+		promptTemplateReduce, promptTemplateKey, llmChain, splitter, maxToken)
 	m = &MapReduceSummarizationChain{
 		mapReduceCombineDocument: mapReduceCombineDocument,
 	}

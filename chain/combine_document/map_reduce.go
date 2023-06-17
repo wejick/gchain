@@ -23,7 +23,7 @@ type MapReduceCombineDocument struct {
 
 // NewMapReduceCombineDocument creates new instance of MapReduceCombineDocument
 func NewMapReduceCombineDocument(mapPrompt *prompt.PromptTemplate, reducePrompt *prompt.PromptTemplate,
-	promptTemplateKey string, llmChain *llm_chain.LLMChain, maxDocLength int) *MapReduceCombineDocument {
+	promptTemplateKey string, llmChain *llm_chain.LLMChain, splitter textsplitter.TextSplitter, maxDocLength int) *MapReduceCombineDocument {
 	if maxDocLength == 0 {
 		maxDocLength = 1000
 	}
@@ -32,23 +32,24 @@ func NewMapReduceCombineDocument(mapPrompt *prompt.PromptTemplate, reducePrompt 
 		reducePrompt:      reducePrompt,
 		llmChain:          llmChain,
 		promptTemplateKey: promptTemplateKey,
+		splitter:          splitter,
 		maxDocLength:      maxDocLength,
 	}
 }
 
 // Combine run the mapreduce process
-func (S *MapReduceCombineDocument) Combine(ctx context.Context, docs []string, options ...func(*model.Option)) (output string, err error) {
+func (M *MapReduceCombineDocument) Combine(ctx context.Context, docs []string, options ...func(*model.Option)) (output string, err error) {
 	/*
 		Map
 		for each doc in Docs
-		We're creating batch of map process, the size of batch <= maxToken. The batch contains S.mapPrompt + doc
+		We're creating batch of map process, the size of batch <= maxToken. The batch contains M.mapPrompt + doc
 		If Batch > maxToken. Create a new batch of the remaining text in the doc
-		For each batch, we run S.llmChain.SimpleRun(ctx, prompt, options...), where prompt = SmapPrompt+doc
+		For each batch, we run M.llmChain.SimpleRun(ctx, prompt, options...), where prompt = SmapPrompt+doc
 
 		Reduce
 		when every batch finished, we compile all the result into 1 doc
-		if s.reducePrompt + doc > maxToken. Create a new batch of the remaining text in the doc
-		For each batch, we run S.llmChain.SimpleRun(ctx, prompt, options...), where prompt = SmapPrompt+doc
+		if M.reducePrompt + doc > maxToken. Create a new batch of the remaining text in the doc
+		For each batch, we run M.llmChain.SimpleRun(ctx, prompt, options...), where prompt = SmapPrompt+doc
 		do the reduce step again
 	*/
 	// Store intermediate results
@@ -58,9 +59,9 @@ func (S *MapReduceCombineDocument) Combine(ctx context.Context, docs []string, o
 	// Map
 	for _, doc := range docs {
 		// split document into batches based on maxToken limit
-		batches := S.splitter.SplitText(doc, S.maxDocLength, 0)
+		batches := M.splitter.SplitText(doc, M.maxDocLength, 0)
 
-		mapResults, err := S.runOperation(ctx, batches, S.mapPrompt, options...)
+		mapResults, err := M.runOperation(ctx, batches, M.mapPrompt, options...)
 		if err != nil {
 			return "", err
 		}
@@ -71,10 +72,10 @@ func (S *MapReduceCombineDocument) Combine(ctx context.Context, docs []string, o
 	intermediateString := strings.Join(intermediateResults, "\n")
 
 	// Split combined result into batches again
-	batches := S.splitter.SplitText(intermediateString, S.maxDocLength, 0)
+	batches := M.splitter.SplitText(intermediateString, M.maxDocLength, 0)
 
 	// Reduce
-	finalResults, err := S.runOperation(ctx, batches, S.reducePrompt, options...)
+	finalResults, err := M.runOperation(ctx, batches, M.reducePrompt, options...)
 	if err != nil {
 		return "", err
 	}
@@ -83,7 +84,7 @@ func (S *MapReduceCombineDocument) Combine(ctx context.Context, docs []string, o
 	return
 }
 
-func (S *MapReduceCombineDocument) runOperation(ctx context.Context, batches []string, promptTemplate *prompt.PromptTemplate, options ...func(*model.Option)) ([]string, error) {
+func (M *MapReduceCombineDocument) runOperation(ctx context.Context, batches []string, promptTemplate *prompt.PromptTemplate, options ...func(*model.Option)) ([]string, error) {
 	var results []string
 	for _, batch := range batches {
 		// prepare data for prompt formatting
@@ -94,7 +95,7 @@ func (S *MapReduceCombineDocument) runOperation(ctx context.Context, batches []s
 		}
 
 		// run operation
-		result, err := S.llmChain.SimpleRun(ctx, prompt, options...)
+		result, err := M.llmChain.SimpleRun(ctx, prompt, options...)
 		if err != nil {
 			return nil, err
 		}
@@ -106,18 +107,18 @@ func (S *MapReduceCombineDocument) runOperation(ctx context.Context, batches []s
 
 // Run all entries in input map will be treated as document to be combined
 // output will be output["output"]
-func (S *MapReduceCombineDocument) Run(ctx context.Context, input map[string]string, options ...func(*model.Option)) (output map[string]string, err error) {
+func (M *MapReduceCombineDocument) Run(ctx context.Context, input map[string]string, options ...func(*model.Option)) (output map[string]string, err error) {
 	if _, ok := input["input"]; !ok {
 		return output, errors.New("input[\"input\"] is not specified")
 	}
 	output = make(map[string]string)
-	output["output"], err = S.Combine(ctx, []string{input["input"]})
+	output["output"], err = M.Combine(ctx, []string{input["input"]})
 
 	return output, err
 }
 
 // SimpleRun will run the input string agains llmchain
-func (S *MapReduceCombineDocument) SimpleRun(ctx context.Context, input string, options ...func(*model.Option)) (output string, err error) {
+func (M *MapReduceCombineDocument) SimpleRun(ctx context.Context, input string, options ...func(*model.Option)) (output string, err error) {
 	err = errors.New("MapReduceCombineDocument.SimpleRun Method is Not Implemented")
 	return
 }

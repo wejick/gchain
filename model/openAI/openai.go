@@ -59,12 +59,6 @@ func (O *OpenAIModel) Call(ctx context.Context, prompt string, options ...func(*
 		Input:        map[string]string{"input": prompt},
 		Output:       map[string]string{"output": output},
 	})
-	defer O.callbackManager.TriggerEvent(ctx, model.CallbackModelEnd, callback.CallbackData{
-		EventName:    model.CallbackModelEnd,
-		FunctionName: "OpenAIModel.Call",
-		Input:        map[string]string{"input": prompt},
-		Output:       map[string]string{"output": output},
-	})
 
 	response, err := O.c.CreateCompletion(ctx, request)
 	if err != nil {
@@ -72,6 +66,13 @@ func (O *OpenAIModel) Call(ctx context.Context, prompt string, options ...func(*
 	} else if len(response.Choices) > 0 {
 		output = response.Choices[0].Text
 	}
+
+	O.callbackManager.TriggerEvent(ctx, model.CallbackModelEnd, callback.CallbackData{
+		EventName:    model.CallbackModelEnd,
+		FunctionName: "OpenAIModel.Call",
+		Input:        map[string]string{"input": prompt},
+		Output:       map[string]string{"output": output},
+	})
 
 	return
 }
