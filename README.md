@@ -3,7 +3,7 @@ Langchain inspired framework to work with LLM in golang
 
 ## Example
 ```golang
-llmModel = _openai.NewOpenAIModel(authToken, "", "text-davinci-003")
+llmModel = _openai.NewOpenAIModel(authToken, "", "text-davinci-003",callback.NewManager(), true)
 chain, err := llm_chain.NewLLMChain(llmModel, nil)
 if err != nil {
     //handle error
