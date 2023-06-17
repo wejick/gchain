@@ -11,9 +11,10 @@ type LLMModel interface {
 
 type Option struct {
 	Temperature      float32
+	StreamingChannel chan ChatMessage // non chat model can also use this
 	MaxToken         int
 	IsStreaming      bool
-	StreamingChannel chan ChatMessage // non chat model can also use this
+	Verbose          bool
 }
 
 func WithTemperature(temp float32) func(*Option) {
@@ -49,6 +50,10 @@ type ChatModel interface {
 type ChatMessage struct {
 	Role    string
 	Content string
+}
+
+func (C *ChatMessage) String() string {
+	return C.Role + ": " + C.Content
 }
 
 const (

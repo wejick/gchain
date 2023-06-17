@@ -16,3 +16,8 @@ type BaseChain interface {
 	// this is to accomodate simple prompt / output usage
 	SimpleRun(ctx context.Context, prompt string, options ...func(*model.Option)) (output string, err error)
 }
+
+const (
+	CallbackChainStart = "chain_start"
+	CallbackChainEnd   = "chain_end"
+)

@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/wejick/gochain/callback"
 	"github.com/wejick/gochain/chain/conversation"
 	"github.com/wejick/gochain/chain/conversational_retrieval"
 	"github.com/wejick/gochain/chain/llm_chain"
@@ -29,9 +30,9 @@ func TestMain(m *testing.M) {
 	// Perform any setup or initialization here
 
 	var authToken = os.Getenv("OPENAI_API_KEY")
-	llmModel = _openai.NewOpenAIModel(authToken, "", "text-davinci-003")
+	llmModel = _openai.NewOpenAIModel(authToken, "", "text-davinci-003", callback.NewManager(), true)
 
-	chatModel = _openai.NewOpenAIChatModel(authToken, "", _openai.GPT3Dot5Turbo0301)
+	chatModel = _openai.NewOpenAIChatModel(authToken, "", _openai.GPT3Dot5Turbo0301, callback.NewManager(), false)
 
 	exitCode := m.Run()
 
