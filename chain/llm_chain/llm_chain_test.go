@@ -5,13 +5,15 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/wejick/gochain/callback"
 	"github.com/wejick/gochain/model"
 	"github.com/wejick/gochain/prompt"
 )
 
 func TestLLMChain_SimpleRun(t *testing.T) {
 	type fields struct {
-		llmModel model.LLMModel
+		llmModel        model.LLMModel
+		callbackManager *callback.Manager
 	}
 	type args struct {
 		ctx     context.Context
@@ -33,6 +35,7 @@ func TestLLMChain_SimpleRun(t *testing.T) {
 						return "", nil
 					},
 				},
+				callbackManager: callback.NewManager(),
 			},
 		},
 		{
@@ -43,6 +46,7 @@ func TestLLMChain_SimpleRun(t *testing.T) {
 						return prompt, nil
 					},
 				},
+				callbackManager: callback.NewManager(),
 			},
 			args: args{
 				input: "echo prompt",
@@ -53,7 +57,8 @@ func TestLLMChain_SimpleRun(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			L := &LLMChain{
-				llmModel: tt.fields.llmModel,
+				llmModel:        tt.fields.llmModel,
+				callbackManager: tt.fields.callbackManager,
 			}
 			gotOutput, err := L.SimpleRun(tt.args.ctx, tt.args.input, tt.args.options...)
 			if (err != nil) != tt.wantErr {
@@ -69,7 +74,8 @@ func TestLLMChain_SimpleRun(t *testing.T) {
 
 func TestLLMChain_Run(t *testing.T) {
 	type fields struct {
-		llmModel model.LLMModel
+		llmModel        model.LLMModel
+		callbackManager *callback.Manager
 	}
 	type args struct {
 		ctx     context.Context
@@ -91,6 +97,7 @@ func TestLLMChain_Run(t *testing.T) {
 						return "", nil
 					},
 				},
+				callbackManager: callback.NewManager(),
 			},
 			wantOutput: map[string]string{"output": ""},
 		},
@@ -102,6 +109,7 @@ func TestLLMChain_Run(t *testing.T) {
 						return prompt, nil
 					},
 				},
+				callbackManager: callback.NewManager(),
 			},
 			args: args{
 				input: map[string]string{"input": "echo input"},
@@ -113,8 +121,9 @@ func TestLLMChain_Run(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			L := &LLMChain{
-				llmModel:       tt.fields.llmModel,
-				promptTemplate: customPrompt,
+				llmModel:        tt.fields.llmModel,
+				callbackManager: tt.fields.callbackManager,
+				promptTemplate:  customPrompt,
 			}
 			gotOutput, err := L.Run(tt.args.ctx, tt.args.input, tt.args.options...)
 			if (err != nil) != tt.wantErr {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/wejick/gochain/callback"
 	"github.com/wejick/gochain/chain/llm_chain"
 	"github.com/wejick/gochain/model"
 )
@@ -12,7 +13,7 @@ var echoLlmChain, _ = llm_chain.NewLLMChain(&model.LLMModelMock{
 	CallFunc: func(ctx context.Context, prompt string, options ...func(*model.Option)) (string, error) {
 		return prompt, nil
 	},
-}, nil)
+}, callback.NewManager(), nil, false)
 var testChain, _ = NewStuffSummarizationChain(echoLlmChain, "", "text")
 
 func TestStuffSummarizationChain_SimpleRun(t *testing.T) {
