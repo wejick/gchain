@@ -1,4 +1,7 @@
 # GoChain
+[![Go Reference](https://pkg.go.dev/badge/github.com/wejick/gochain.svg)](https://pkg.go.dev/github.com/wejick/gochain)
+![Build workflow](https://github.com/wejick/gochain/actions/workflows/go.yml/badge.svg)
+
 Langchain inspired framework to work with LLM in golang
 
 ## Example
