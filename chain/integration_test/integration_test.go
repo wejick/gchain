@@ -120,7 +120,7 @@ func TestStuffSummarizationChainChat(t *testing.T) {
 
 func TestConversationChainChat(t *testing.T) {
 	memory := []model.ChatMessage{}
-	convoChain := conversation.NewConversationChain(chatModel, memory, "You're helpful chatbot that answer very concisely")
+	convoChain := conversation.NewConversationChain(chatModel, memory, callback.NewManager(), "You're helpful chatbot that answer very concisely", true)
 
 	convoChain.AppendToMemory(model.ChatMessage{Role: model.ChatMessageRoleAssistant, Content: "Hi, My name is GioAI"})
 	output, err := convoChain.Run(context.Background(), map[string]string{"input": "what's your name?"}, model.WithTemperature(0), model.WithMaxToken(100))

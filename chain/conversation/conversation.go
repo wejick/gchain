@@ -4,22 +4,34 @@ import (
 	"context"
 	"errors"
 
+	"github.com/wejick/gochain/callback"
+	basechain "github.com/wejick/gochain/chain"
 	"github.com/wejick/gochain/model"
 )
 
 // ConversationChain that carries on a conversation from a prompt plus history.
 type ConversationChain struct {
-	chatModel model.ChatModel // only allow using ChatModel
-	memory    []model.ChatMessage
+	chatModel       model.ChatModel // only allow using ChatModel
+	memory          []model.ChatMessage
+	callbackManager *callback.Manager
 }
 
 // NewConversationChain create new conversation chain
 // firstSystemPrompt will be the first chat in chat memory, with role as System
-func NewConversationChain(chatModel model.ChatModel, memory []model.ChatMessage, firstSystemPrompt string) (chain *ConversationChain) {
+func NewConversationChain(chatModel model.ChatModel,
+	memory []model.ChatMessage,
+	callbackManager *callback.Manager,
+	firstSystemPrompt string,
+	verbose bool) (chain *ConversationChain) {
+
+	if verbose {
+		callbackManager.RegisterCallback(basechain.CallbackChainEnd, callback.VerboseCallback)
+	}
 	memory = append(memory, model.ChatMessage{Role: model.ChatMessageRoleSystem, Content: firstSystemPrompt})
 	return &ConversationChain{
-		chatModel: chatModel,
-		memory:    memory,
+		chatModel:       chatModel,
+		callbackManager: callbackManager,
+		memory:          memory,
 	}
 }
 
@@ -35,6 +47,14 @@ func (C *ConversationChain) Run(ctx context.Context, chat map[string]string, opt
 	}
 	output = make(map[string]string)
 
+	//trigger callback
+	C.callbackManager.TriggerEvent(ctx, basechain.CallbackChainStart, callback.CallbackData{
+		EventName:    basechain.CallbackChainStart,
+		FunctionName: "ConversationChain.Run",
+		Input:        chat,
+		Output:       output,
+	})
+
 	C.AppendToMemory(model.ChatMessage{Role: model.ChatMessageRoleUser, Content: chat["input"]})
 	message, err := C.chatModel.Chat(ctx, C.memory, options...)
 
@@ -42,6 +62,14 @@ func (C *ConversationChain) Run(ctx context.Context, chat map[string]string, opt
 	C.AppendToMemory(message)
 
 	output["output"] = message.Content
+
+	//trigger callback
+	C.callbackManager.TriggerEvent(ctx, basechain.CallbackChainEnd, callback.CallbackData{
+		EventName:    basechain.CallbackChainEnd,
+		FunctionName: "ConversationChain.Run",
+		Input:        chat,
+		Output:       output,
+	})
 
 	return
 }
