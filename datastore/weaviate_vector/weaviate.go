@@ -14,6 +14,7 @@ import (
 
 var _ datastore.VectorStore = &WeaviateVectorStore{}
 
+// WeaviateVectorStore provide access to weaviate vector db
 type WeaviateVectorStore struct {
 	client         *weaviate.Client
 	embeddingModel model.EmbeddingModel
@@ -21,6 +22,7 @@ type WeaviateVectorStore struct {
 	existClass map[string]bool
 }
 
+// NewWeaviateVectorStore return new Weaviate Vector Store instance
 func NewWeaviateVectorStore(host string, scheme string, apiKey string, embeddingModel model.EmbeddingModel, headers map[string]string) (WVS *WeaviateVectorStore, err error) {
 	WVS = &WeaviateVectorStore{
 		existClass:     map[string]bool{},
@@ -37,7 +39,8 @@ func NewWeaviateVectorStore(host string, scheme string, apiKey string, embedding
 	return
 }
 
-func (W *WeaviateVectorStore) SearchVector(ctx context.Context, className string, vector []float32) (output []interface{}, err error) {
+// SearchVector query weaviate using vector
+func (W *WeaviateVectorStore) SearchVector(ctx context.Context, className string, vector []float32) (output []datastore.Document, err error) {
 	query := W.client.GraphQL().NearVectorArgBuilder().WithVector(vector)
 	fields := []graphql.Field{
 		{Name: "text"},
@@ -67,15 +70,25 @@ func (W *WeaviateVectorStore) SearchVector(ctx context.Context, className string
 	    }
 		}
 	*/
-	if getResp, ok := resp.Data["Get"].(map[string]interface{}); ok {
-		if output, ok = getResp[className].([]interface{}); !ok {
-			err = errors.New("can't parse weaviate response")
+	if GetResult, getok := resp.Data["Get"].(map[string]interface{}); getok {
+		// Get the className
+		if classNameResult, classok := GetResult[className].([]interface{}); classok {
+			// Get the data
+			for _, class := range classNameResult {
+				if classMap, ok := class.(map[string]interface{}); ok {
+					output = append(output, datastore.Document{
+						Text: classMap["text"].(string),
+					})
+				}
+			}
 		}
 	}
 	return
 }
 
-func (W *WeaviateVectorStore) Search(ctx context.Context, className string, query string) (output []interface{}, err error) {
+// Search query weaviate db, the query parameter will be translated into embedding
+// the underlying query is the same with SearchVector
+func (W *WeaviateVectorStore) Search(ctx context.Context, className string, query string) (output []datastore.Document, err error) {
 	vectorQuery, err := W.embeddingModel.EmbedQuery(query)
 	if err != nil {
 		return
@@ -86,11 +99,13 @@ func (W *WeaviateVectorStore) Search(ctx context.Context, className string, quer
 	return
 }
 
+// AddText add single string document
 func (W *WeaviateVectorStore) AddText(ctx context.Context, className string, input string) (err error) {
 	_, err = W.AddDocuments(ctx, className, []string{input})
 	return
 }
 
+// AddDocuments add multiple string documents
 func (W *WeaviateVectorStore) AddDocuments(ctx context.Context, className string, documents []string) (batchErr []error, err error) {
 	err = W.createClassIfNotExist(ctx, className)
 	if err != nil {

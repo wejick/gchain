@@ -1,3 +1,12 @@
+/*
+Conversational retrieval will try to answer the question by looking up the data in the knowledge base.
+
+The main traits of this chain are :
+1. The answerOrLookup function will determine whether a question need to be lookup to the knowledge base or not. If not then it will be answered by the chat model directly.
+This way, in best case scenario only 1 request to LLM is needed. When look up is needed, this function will return enough context to be used for look up and answering.
+2. The answerFromDoc function will try to answer question using the context from answerOrlookup output and also information from knowledge base.
+This form an independent one-off llm call, which will safe conversation history token limit.
+*/
 package conversational_retrieval
 
 import (
@@ -32,6 +41,7 @@ type ConversationalRetrievalChain struct {
 	callbackManager     *callback.Manager
 	instructionTemplate *prompt.PromptTemplate
 	answerTemplate      *prompt.PromptTemplate
+	indexName           string
 	maxToken            int
 }
 
@@ -39,6 +49,7 @@ func NewConversationalRetrievalChain(
 	chatModel model.ChatModel,
 	memory []model.ChatMessage,
 	retriever datastore.Retriever,
+	indexName string,
 	textSplitter textsplitter.TextSplitter,
 	callbackManager *callback.Manager,
 	firstSystemPrompt string,
@@ -59,6 +70,7 @@ func NewConversationalRetrievalChain(
 		chatModel:           chatModel,
 		memory:              memory,
 		retriever:           retriever,
+		indexName:           indexName,
 		textSplitter:        textSplitter,
 		callbackManager:     callbackManager,
 		instructionTemplate: instructionTemplate,
@@ -109,15 +121,13 @@ func (C *ConversationalRetrievalChain) Run(ctx context.Context, chat map[string]
 	}
 
 	// when we need to look up
-	retrieverOutput, err := C.retriever.Search(ctx, "Indonesia", answerOrLookup.Query)
+	retrieverOutput, err := C.retriever.Search(ctx, C.indexName, answerOrLookup.Query)
 	if err != nil {
 		return
 	}
 	var retrieverResult string
 	for _, resp := range retrieverOutput {
-		if data, ok := resp.(map[string]interface{}); ok {
-			retrieverResult += data["text"].(string)
-		}
+		retrieverResult += resp.Text
 	}
 
 	answer, err := C.answerFromDoc(ctx, answerOrLookup, retrieverResult, options...)

@@ -56,6 +56,7 @@ func Init() (err error) {
 
 func main() {
 	indexFlag := flag.Bool("index", false, "Specify the --index flag to run the index function")
+	deleteFlag := flag.Bool("delete", false, "Specify the --delete flag to run the delete function")
 
 	flag.Parse()
 
@@ -65,13 +66,15 @@ func main() {
 
 	if *indexFlag {
 		Indexing()
+	} else if *deleteFlag {
+		DeleteIndex()
 	} else {
 		Chatting([]model.ChatMessage{})
 	}
 }
 
 func Chatting(memory []model.ChatMessage) {
-	chain := conversational_retrieval.NewConversationalRetrievalChain(chatModel, memory, wvClient, textplitter, callback.NewManager(), "", 1000, false)
+	chain := conversational_retrieval.NewConversationalRetrievalChain(chatModel, memory, wvClient, "Indonesia", textplitter, callback.NewManager(), "", 2000, false)
 	fmt.Println("AI : How can I help you, I know many things about indonesia")
 	scanner := bufio.NewScanner(os.Stdin)
 	for {
@@ -87,7 +90,21 @@ func Chatting(memory []model.ChatMessage) {
 	}
 }
 
+func DeleteIndex() (err error) {
+	err = wvClient.DeleteIndex(context.Background(), "Indonesia")
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	return
+}
+
 func Indexing() (err error) {
+	indexingplitter, err := textsplitter.NewTikTokenSplitter(openai.AdaEmbeddingV2.String())
+	if err != nil {
+		log.Println(err)
+		return
+	}
 	sources := []source{
 		{filename: "indonesia.txt", url: "https://en.wikipedia.org/wiki/Indonesia"},
 		{filename: "history_of_indonesia.txt", url: "https://en.wikipedia.org/wiki/History_of_Indonesia"},
@@ -102,8 +119,8 @@ func Indexing() (err error) {
 	}
 
 	var docs []string
-	docs = textplitter.SplitText(sources[0].doc, 1000, 0)
-	docs = append(docs, textplitter.SplitText(sources[1].doc, 1000, 0)...)
+	docs = indexingplitter.SplitText(sources[0].doc, 500, 0)
+	docs = append(docs, indexingplitter.SplitText(sources[1].doc, 500, 0)...)
 
 	bErr, err := wvClient.AddDocuments(context.Background(), "Indonesia", docs)
 	if err != nil {
