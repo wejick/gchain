@@ -63,17 +63,24 @@ func TestWeaviate(t *testing.T) {
 	}
 
 	response, err := wvClient.Search(context.Background(), className, "city skyline")
-	o := convertInterfaceToMap(response[0])
-	assert.Contains(t, o["text"], "skyline")
+	assert.NoError(t, err)
+	if len(response) > 0 {
+		assert.Contains(t, response[0].Text, "skyline")
+	} else {
+		t.Error("response is empty")
+	}
 
 	vectorQuery, err := embeddingModel.EmbedQuery("city skyline")
 	response, err = wvClient.SearchVector(context.Background(), className, vectorQuery)
-	p := convertInterfaceToMap(response[0])
-	assert.Contains(t, p["text"], "skyline")
+	assert.NoError(t, err)
+	if len(response) > 0 {
+		assert.Contains(t, response[0].Text, "skyline")
+	} else {
+		t.Error("response is empty")
+	}
 
 	err = wvClient.DeleteIndex(context.Background(), className)
 	assert.NoError(t, err)
-
 }
 
 func convertInterfaceToMap(input interface{}) map[string]string {
@@ -90,11 +97,6 @@ func TestWikipedia(t *testing.T) {
 	result, err := w.Search(context.Background(), "", "indonesia")
 	assert.NoError(t, err)
 	for _, res := range result {
-		if pageContent, ok := res.(string); ok {
-			assert.Contains(t, pageContent, "Indonesia")
-		} else {
-			t.Error("pageContent is not a string")
-		}
+		assert.Contains(t, res.Text, "Indonesia")
 	}
-
 }

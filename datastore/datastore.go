@@ -2,13 +2,20 @@ package datastore
 
 import "context"
 
+// Document is the data structure that will be stored in the vector index
+type Document struct {
+	Text     string
+	Metadata map[string]interface{}
+}
+
 // TODO :
 // function to create index with specified schema
 // ability to pass extra option to the vectorstore like minimum distance, certainty, limit, and many other
 
+// DataStore is the interface for storing and retrieving data
 type DataStore interface {
 	// Search using a query string
-	Search(ctx context.Context, indexName string, query string) ([]interface{}, error)
+	Search(ctx context.Context, indexName string, query string) ([]Document, error)
 	// AddText store text to vector index
 	// it will also store embedding of the text using specified embedding model
 	// If the index doesnt exist, it will create one with default schema
@@ -21,15 +28,19 @@ type DataStore interface {
 	DeleteIndex(ctx context.Context, indexName string) (err error)
 }
 
+// VectorStore is the interface for storing and retrieving vector data
 type VectorStore interface {
 	DataStore
 	//SearchVector by providing the vector from embedding function
-	SearchVector(ctx context.Context, indexName string, vector []float32) ([]interface{}, error)
+	SearchVector(ctx context.Context, indexName string, vector []float32) ([]Document, error)
 }
 
+// Retriever is the interface for retrieving data
+// can be used to interact with read only data source like get API
+// DataStore and VectorStore are interface compatible with retriever
 type Retriever interface {
 	// Search using a query string
-	Search(ctx context.Context, indexName string, query string) ([]interface{}, error)
+	Search(ctx context.Context, indexName string, query string) ([]Document, error)
 }
 
 // Option
