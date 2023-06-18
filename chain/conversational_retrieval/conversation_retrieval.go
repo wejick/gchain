@@ -6,6 +6,8 @@ import (
 	"errors"
 	"log"
 
+	"github.com/wejick/gochain/callback"
+	basechain "github.com/wejick/gochain/chain"
 	"github.com/wejick/gochain/datastore"
 	"github.com/wejick/gochain/model"
 	"github.com/wejick/gochain/prompt"
@@ -18,6 +20,7 @@ type answerOrLookupOutput struct {
 	Intent              string `json:"intent"`
 	Answer              string `json:"answer"`
 	ConversationContext string `json:"conversation_context"`
+	Lookup              bool   `json:"lookup"`
 }
 
 // ConversationalRetrievalChain conversation with ability to lookup data
@@ -26,6 +29,7 @@ type ConversationalRetrievalChain struct {
 	memory              []model.ChatMessage
 	retriever           datastore.Retriever
 	textSplitter        textsplitter.TextSplitter
+	callbackManager     *callback.Manager
 	instructionTemplate *prompt.PromptTemplate
 	answerTemplate      *prompt.PromptTemplate
 	maxToken            int
@@ -36,13 +40,18 @@ func NewConversationalRetrievalChain(
 	memory []model.ChatMessage,
 	retriever datastore.Retriever,
 	textSplitter textsplitter.TextSplitter,
+	callbackManager *callback.Manager,
 	firstSystemPrompt string,
 	maxToken int,
+	verbose bool,
 ) (chain *ConversationalRetrievalChain) {
-
 	instructionTemplate, _ := prompt.NewPromptTemplate("instruction", instruction)
 	answerTemplate, _ := prompt.NewPromptTemplate("answer", answeringInstruction)
 	memory = append(memory, model.ChatMessage{Role: model.ChatMessageRoleSystem, Content: firstSystemPrompt})
+
+	if verbose {
+		callbackManager.RegisterCallback(basechain.CallbackChainEnd, callback.VerboseCallback)
+	}
 	if maxToken == 0 {
 		maxToken = 1000
 	}
@@ -50,10 +59,11 @@ func NewConversationalRetrievalChain(
 		chatModel:           chatModel,
 		memory:              memory,
 		retriever:           retriever,
+		textSplitter:        textSplitter,
+		callbackManager:     callbackManager,
 		instructionTemplate: instructionTemplate,
 		answerTemplate:      answerTemplate,
 		maxToken:            maxToken,
-		textSplitter:        textSplitter,
 	}
 }
 
@@ -63,19 +73,38 @@ func (C *ConversationalRetrievalChain) Run(ctx context.Context, chat map[string]
 		return output, errors.New("input[\"input\"] is not specified")
 	}
 	output = make(map[string]string)
+	var answerOrLookup answerOrLookupOutput
+
+	// trigger CallbackChainStart
+	C.callbackManager.TriggerEvent(ctx, basechain.CallbackChainStart, callback.CallbackData{
+		EventName:    basechain.CallbackChainStart,
+		FunctionName: "ConversationalRetrievalChain.Run",
+		Input:        chat,
+		Output:       output})
 
 	inputChat := model.ChatMessage{Role: model.ChatMessageRoleUser, Content: chat["input"]}
 
-	answerOrLookup, err := C.AnswerOrLookup(ctx, chat["input"], options...)
+	answerOrLookup, err = C.answerOrLookup(ctx, chat["input"], options...)
 	if err != nil {
 		return
 	}
 
+	// trigger CallbackChainEnd, using lambda to defer the execution
+	defer func(data callback.CallbackData) {
+		C.callbackManager.TriggerEvent(ctx, basechain.CallbackChainEnd, data)
+	}(callback.CallbackData{
+		EventName:    basechain.CallbackChainEnd,
+		FunctionName: "ConversationalRetrievalChain.Run",
+		Input:        chat,
+		Output:       output,
+		Data:         answerOrLookup})
+
 	// when we get direct answer
-	if answerOrLookup.Answer != "" {
+	if !answerOrLookup.Lookup {
 		C.AppendToMemory(inputChat)
 		C.AppendToMemory(model.ChatMessage{Role: model.ChatMessageRoleAssistant, Content: answerOrLookup.Answer})
 		output["output"] = answerOrLookup.Answer
+
 		return
 	}
 
@@ -105,9 +134,9 @@ func (C *ConversationalRetrievalChain) Run(ctx context.Context, chat map[string]
 	return
 }
 
-// AnswerOrLookup will return answer if it can, or return lookup query
+// answerOrLookup will return answer if it can, or return lookup query
 // This approach is faster because we will be able to get answer directly when possible
-func (C *ConversationalRetrievalChain) AnswerOrLookup(ctx context.Context, input string, options ...func(*model.Option)) (output answerOrLookupOutput, err error) {
+func (C *ConversationalRetrievalChain) answerOrLookup(ctx context.Context, input string, options ...func(*model.Option)) (output answerOrLookupOutput, err error) {
 	convoHistory := model.FlattenChatMessages(C.memory)
 	instructionPrompt, err := C.instructionTemplate.FormatPrompt(map[string]string{"question": input, "history": convoHistory})
 	if err != nil {
@@ -130,7 +159,7 @@ func (C *ConversationalRetrievalChain) AnswerOrLookup(ctx context.Context, input
 // this one off query is the key to make this more cost effective and save token usage
 func (C *ConversationalRetrievalChain) answerFromDoc(ctx context.Context, context answerOrLookupOutput, doc string, options ...func(*model.Option)) (output string, err error) {
 	// cut to max token
-	if len(doc) > C.maxToken {
+	if C.textSplitter.Len(doc) > C.maxToken {
 		doc = C.textSplitter.SplitText(doc, C.maxToken, 0)[0]
 	}
 

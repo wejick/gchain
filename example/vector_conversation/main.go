@@ -5,7 +5,6 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 
@@ -44,7 +43,7 @@ func Init() (err error) {
 		log.Println(err)
 		return
 	}
-	embeddingModel := _openai.NewOpenAIEmbedModel(OAIauthToken, "", openai.AdaEmbeddingV2)
+	embeddingModel = _openai.NewOpenAIEmbedModel(OAIauthToken, "", openai.AdaEmbeddingV2)
 	chatModel = _openai.NewOpenAIChatModel(OAIauthToken, "", _openai.GPT3Dot5Turbo0301, callback.NewManager(), false)
 
 	wvClient, err = weaviateVS.NewWeaviateVectorStore(wvhost, wvscheme, wvApiKey, embeddingModel, nil)
@@ -72,7 +71,7 @@ func main() {
 }
 
 func Chatting(memory []model.ChatMessage) {
-	chain := conversational_retrieval.NewConversationalRetrievalChain(chatModel, memory, wvClient, textplitter, "", 1000)
+	chain := conversational_retrieval.NewConversationalRetrievalChain(chatModel, memory, wvClient, textplitter, callback.NewManager(), "", 1000, false)
 	fmt.Println("AI : How can I help you, I know many things about indonesia")
 	scanner := bufio.NewScanner(os.Stdin)
 	for {
@@ -94,7 +93,7 @@ func Indexing() (err error) {
 		{filename: "history_of_indonesia.txt", url: "https://en.wikipedia.org/wiki/History_of_Indonesia"},
 	}
 	for idx, s := range sources {
-		data, err := ioutil.ReadFile(s.filename)
+		data, err := os.ReadFile(s.filename)
 		if err != nil {
 			log.Println(err)
 			continue
