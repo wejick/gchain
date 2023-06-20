@@ -21,7 +21,7 @@ func TestMain(m *testing.M) {
 	fmt.Println("Running integration tests...")
 
 	var authToken = os.Getenv("OPENAI_API_KEY")
-	llmModel = _openai.NewOpenAIModel(authToken, "", "text-ada-001", callback.NewManager(), true)
+	llmModel = _openai.NewOpenAIModel(authToken, "", "text-ada-001", callback.NewManager(), false)
 
 	exitCode := m.Run()
 
@@ -71,7 +71,8 @@ func TestOpenAIEmbedding(t *testing.T) {
 	embedding, err := embeddingModel.EmbedQuery("answer in short and direct")
 	if err != nil {
 		t.Error(err)
-	} else {
-		t.Log("output : ", embedding)
+	}
+	if embedding == nil {
+		t.Error("embedding is nil")
 	}
 }

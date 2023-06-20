@@ -14,6 +14,7 @@ import (
 	"github.com/wejick/gochain/callback"
 	weaviateVS "github.com/wejick/gochain/datastore/weaviate_vector"
 	wikipedia "github.com/wejick/gochain/datastore/wikipedia_retriever"
+	"github.com/wejick/gochain/document"
 	"github.com/wejick/gochain/model"
 	_openai "github.com/wejick/gochain/model/openAI"
 )
@@ -46,11 +47,11 @@ func TestWeaviate(t *testing.T) {
 
 	className := "Story"
 	story := "In the depths of the forest, a lone wolf found an abandoned puppy and raised it as its own. Years later, the once-lonely wolf and the playful dog became an inseparable duo, roaming the wilderness together."
-	stories := []string{
-		"As the sun set over the city skyline, a street musician's haunting melody caught the attention of a passerby, transporting them to a world of forgotten dreams and lost love in just a few melancholic notes.",
-		"In a bustling café, a barista noticed a regular customer's worn-out shoes and secretly left a brand new pair beside their table, inspiring a ripple of anonymous acts of kindness that spread throughout the community.",
-		"A bookworm stumbled upon a dusty, forgotten tome in the attic, and with each turn of the page, they were transported to extraordinary worlds, becoming the hero of their own epic adventures.",
-		"As the rain poured relentlessly, a gardener watched in awe as her wilting flowers began to bloom, realizing that sometimes the greatest growth comes from enduring the storms of life.",
+	stories := []document.Document{
+		{Text: "As the sun set over the city skyline, a street musician's haunting melody caught the attention of a passerby, transporting them to a world of forgotten dreams and lost love in just a few melancholic notes."},
+		{Text: "In a bustling café, a barista noticed a regular customer's worn-out shoes and secretly left a brand new pair beside their table, inspiring a ripple of anonymous acts of kindness that spread throughout the community."},
+		{Text: "A bookworm stumbled upon a dusty, forgotten tome in the attic, and with each turn of the page, they were transported to extraordinary worlds, becoming the hero of their own epic adventures."},
+		{Text: "As the rain poured relentlessly, a gardener watched in awe as her wilting flowers began to bloom, realizing that sometimes the greatest growth comes from enduring the storms of life."},
 	}
 
 	err = wvClient.AddText(context.Background(), className, story)

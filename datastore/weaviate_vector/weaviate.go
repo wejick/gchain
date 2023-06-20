@@ -9,6 +9,7 @@ import (
 	"github.com/weaviate/weaviate-go-client/v4/weaviate/graphql"
 	"github.com/weaviate/weaviate/entities/models"
 	"github.com/wejick/gochain/datastore"
+	"github.com/wejick/gochain/document"
 	"github.com/wejick/gochain/model"
 )
 
@@ -40,7 +41,7 @@ func NewWeaviateVectorStore(host string, scheme string, apiKey string, embedding
 }
 
 // SearchVector query weaviate using vector
-func (W *WeaviateVectorStore) SearchVector(ctx context.Context, className string, vector []float32) (output []datastore.Document, err error) {
+func (W *WeaviateVectorStore) SearchVector(ctx context.Context, className string, vector []float32) (output []document.Document, err error) {
 	query := W.client.GraphQL().NearVectorArgBuilder().WithVector(vector)
 	fields := []graphql.Field{
 		{Name: "text"},
@@ -76,7 +77,7 @@ func (W *WeaviateVectorStore) SearchVector(ctx context.Context, className string
 			// Get the data
 			for _, class := range classNameResult {
 				if classMap, ok := class.(map[string]interface{}); ok {
-					output = append(output, datastore.Document{
+					output = append(output, document.Document{
 						Text: classMap["text"].(string),
 					})
 				}
@@ -88,7 +89,7 @@ func (W *WeaviateVectorStore) SearchVector(ctx context.Context, className string
 
 // Search query weaviate db, the query parameter will be translated into embedding
 // the underlying query is the same with SearchVector
-func (W *WeaviateVectorStore) Search(ctx context.Context, className string, query string) (output []datastore.Document, err error) {
+func (W *WeaviateVectorStore) Search(ctx context.Context, className string, query string) (output []document.Document, err error) {
 	vectorQuery, err := W.embeddingModel.EmbedQuery(query)
 	if err != nil {
 		return
@@ -101,18 +102,18 @@ func (W *WeaviateVectorStore) Search(ctx context.Context, className string, quer
 
 // AddText add single string document
 func (W *WeaviateVectorStore) AddText(ctx context.Context, className string, input string) (err error) {
-	_, err = W.AddDocuments(ctx, className, []string{input})
+	_, err = W.AddDocuments(ctx, className, []document.Document{{Text: input}})
 	return
 }
 
 // AddDocuments add multiple string documents
-func (W *WeaviateVectorStore) AddDocuments(ctx context.Context, className string, documents []string) (batchErr []error, err error) {
+func (W *WeaviateVectorStore) AddDocuments(ctx context.Context, className string, documents []document.Document) (batchErr []error, err error) {
 	err = W.createClassIfNotExist(ctx, className)
 	if err != nil {
 		return
 	}
 
-	objVectors, err := W.embeddingModel.EmbedDocuments(documents)
+	objVectors, err := W.embeddingModel.EmbedDocuments(document.DocumentsToStrings(documents))
 	if err != nil {
 		return
 	}
@@ -130,14 +131,19 @@ func (W *WeaviateVectorStore) AddDocuments(ctx context.Context, className string
 	return
 }
 
-func documentsToObject(className string, documents []string, vectors [][]float32) (objs []*models.Object) {
+func documentsToObject(className string, documents []document.Document, vectors [][]float32) (objs []*models.Object) {
 	for idx, doc := range documents {
+		properties := map[string]any{
+			"text": doc.Text,
+		}
+		// Put metadata to properties
+		for key, val := range doc.Metadata {
+			properties[key] = val
+		}
 		objs = append(objs, &models.Object{
-			Class: className,
-			Properties: map[string]any{
-				"text": doc,
-			},
-			Vector: vectors[idx],
+			Class:      className,
+			Properties: properties,
+			Vector:     vectors[idx],
 		})
 	}
 	return

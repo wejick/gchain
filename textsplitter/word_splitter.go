@@ -1,6 +1,10 @@
 package textsplitter
 
-import "strings"
+import (
+	"strings"
+
+	"github.com/wejick/gochain/document"
+)
 
 type WordSplitter struct {
 }
@@ -30,6 +34,20 @@ func (W *WordSplitter) SplitText(input string, maxChunkSize int, overlap int) []
 	}
 
 	return batches
+}
+
+// SplitDocument creates chunk where length's doesn't exceed maxChunkSize.
+// the document metadata will be copied to each chunk
+func (W *WordSplitter) SplitDocument(input document.Document, maxChunkSize int, overlap int) []document.Document {
+	chunks := W.SplitText(input.Text, maxChunkSize, overlap)
+	documents := []document.Document{}
+	for _, chunk := range chunks {
+		documents = append(documents, document.Document{
+			Text:     chunk,
+			Metadata: input.Metadata,
+		})
+	}
+	return documents
 }
 
 func (W *WordSplitter) Len(input string) int {

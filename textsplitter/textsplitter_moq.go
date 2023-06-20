@@ -4,6 +4,7 @@
 package textsplitter
 
 import (
+	"github.com/wejick/gochain/document"
 	"sync"
 )
 
@@ -20,6 +21,9 @@ var _ TextSplitter = &TextSplitterMock{}
 //			LenFunc: func(input string) int {
 //				panic("mock out the Len method")
 //			},
+//			SplitDocumentFunc: func(input document.Document, maxChunkSize int, overlap int) []document.Document {
+//				panic("mock out the SplitDocument method")
+//			},
 //			SplitTextFunc: func(input string, maxChunkSize int, overlap int) []string {
 //				panic("mock out the SplitText method")
 //			},
@@ -33,6 +37,9 @@ type TextSplitterMock struct {
 	// LenFunc mocks the Len method.
 	LenFunc func(input string) int
 
+	// SplitDocumentFunc mocks the SplitDocument method.
+	SplitDocumentFunc func(input document.Document, maxChunkSize int, overlap int) []document.Document
+
 	// SplitTextFunc mocks the SplitText method.
 	SplitTextFunc func(input string, maxChunkSize int, overlap int) []string
 
@@ -42,6 +49,15 @@ type TextSplitterMock struct {
 		Len []struct {
 			// Input is the input argument value.
 			Input string
+		}
+		// SplitDocument holds details about calls to the SplitDocument method.
+		SplitDocument []struct {
+			// Input is the input argument value.
+			Input document.Document
+			// MaxChunkSize is the maxChunkSize argument value.
+			MaxChunkSize int
+			// Overlap is the overlap argument value.
+			Overlap int
 		}
 		// SplitText holds details about calls to the SplitText method.
 		SplitText []struct {
@@ -53,8 +69,9 @@ type TextSplitterMock struct {
 			Overlap int
 		}
 	}
-	lockLen       sync.RWMutex
-	lockSplitText sync.RWMutex
+	lockLen           sync.RWMutex
+	lockSplitDocument sync.RWMutex
+	lockSplitText     sync.RWMutex
 }
 
 // Len calls LenFunc.
@@ -86,6 +103,46 @@ func (mock *TextSplitterMock) LenCalls() []struct {
 	mock.lockLen.RLock()
 	calls = mock.calls.Len
 	mock.lockLen.RUnlock()
+	return calls
+}
+
+// SplitDocument calls SplitDocumentFunc.
+func (mock *TextSplitterMock) SplitDocument(input document.Document, maxChunkSize int, overlap int) []document.Document {
+	if mock.SplitDocumentFunc == nil {
+		panic("TextSplitterMock.SplitDocumentFunc: method is nil but TextSplitter.SplitDocument was just called")
+	}
+	callInfo := struct {
+		Input        document.Document
+		MaxChunkSize int
+		Overlap      int
+	}{
+		Input:        input,
+		MaxChunkSize: maxChunkSize,
+		Overlap:      overlap,
+	}
+	mock.lockSplitDocument.Lock()
+	mock.calls.SplitDocument = append(mock.calls.SplitDocument, callInfo)
+	mock.lockSplitDocument.Unlock()
+	return mock.SplitDocumentFunc(input, maxChunkSize, overlap)
+}
+
+// SplitDocumentCalls gets all the calls that were made to SplitDocument.
+// Check the length with:
+//
+//	len(mockedTextSplitter.SplitDocumentCalls())
+func (mock *TextSplitterMock) SplitDocumentCalls() []struct {
+	Input        document.Document
+	MaxChunkSize int
+	Overlap      int
+} {
+	var calls []struct {
+		Input        document.Document
+		MaxChunkSize int
+		Overlap      int
+	}
+	mock.lockSplitDocument.RLock()
+	calls = mock.calls.SplitDocument
+	mock.lockSplitDocument.RUnlock()
 	return calls
 }
 

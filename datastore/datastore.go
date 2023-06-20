@@ -1,12 +1,10 @@
 package datastore
 
-import "context"
+import (
+	"context"
 
-// Document is the data structure that will be stored in the vector index
-type Document struct {
-	Text     string
-	Metadata map[string]interface{}
-}
+	"github.com/wejick/gochain/document"
+)
 
 // TODO :
 // function to create index with specified schema
@@ -15,7 +13,7 @@ type Document struct {
 // DataStore is the interface for storing and retrieving data
 type DataStore interface {
 	// Search using a query string
-	Search(ctx context.Context, indexName string, query string) ([]Document, error)
+	Search(ctx context.Context, indexName string, query string) ([]document.Document, error)
 	// AddText store text to vector index
 	// it will also store embedding of the text using specified embedding model
 	// If the index doesnt exist, it will create one with default schema
@@ -23,7 +21,7 @@ type DataStore interface {
 	// AddDocuments store a batch of documents to vector index
 	// it will also store embedding of the document using specified embedding model
 	// If the index doesnt exist, it will create one with default schema
-	AddDocuments(ctx context.Context, indexName string, documents []string) (batchErr []error, err error)
+	AddDocuments(ctx context.Context, indexName string, documents []document.Document) (batchErr []error, err error)
 	// DeleteIndex drop the index
 	DeleteIndex(ctx context.Context, indexName string) (err error)
 }
@@ -32,7 +30,7 @@ type DataStore interface {
 type VectorStore interface {
 	DataStore
 	//SearchVector by providing the vector from embedding function
-	SearchVector(ctx context.Context, indexName string, vector []float32) ([]Document, error)
+	SearchVector(ctx context.Context, indexName string, vector []float32) ([]document.Document, error)
 }
 
 // Retriever is the interface for retrieving data
@@ -40,7 +38,7 @@ type VectorStore interface {
 // DataStore and VectorStore are interface compatible with retriever
 type Retriever interface {
 	// Search using a query string
-	Search(ctx context.Context, indexName string, query string) ([]Document, error)
+	Search(ctx context.Context, indexName string, query string) ([]document.Document, error)
 }
 
 // Option

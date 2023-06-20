@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/pkoukk/tiktoken-go"
+	"github.com/wejick/gochain/document"
 )
 
 type TikTokenSplitter struct {
@@ -23,8 +24,8 @@ func NewTikTokenSplitter(modelName string) (*TikTokenSplitter, error) {
 	}, err
 }
 
-// splitIntoBatches creates word batches where length's doesn't exceed maxChunkSize.
-func (W *TikTokenSplitter) SplitText(input string, maxChunkSize int, overlap int) []string {
+// SplitText creates chunks where length's doesn't exceed maxChunkSize.
+func (T *TikTokenSplitter) SplitText(input string, maxChunkSize int, overlap int) []string {
 	if input == "" {
 		return []string{}
 	}
@@ -35,14 +36,14 @@ func (W *TikTokenSplitter) SplitText(input string, maxChunkSize int, overlap int
 	var lenCounter int
 
 	for _, word := range words {
-		if lenCounter+W.Len(word) > maxChunkSize {
+		if lenCounter+T.Len(word) > maxChunkSize {
 			batches = append(batches, strings.Join(batch, " "))
 			batch = []string{}
 			lenCounter = 0
 		}
 
 		batch = append(batch, word)
-		lenCounter += W.Len(word)
+		lenCounter += T.Len(word)
 	}
 
 	if len(batch) > 0 {
@@ -52,6 +53,20 @@ func (W *TikTokenSplitter) SplitText(input string, maxChunkSize int, overlap int
 	return batches
 }
 
-func (W *TikTokenSplitter) Len(input string) int {
-	return len(W.tkm.Encode(input, nil, nil))
+// SplitDocument creates chunk where length's doesn't exceed maxChunkSize.
+// the document metadata will be copied to each chunk
+func (T *TikTokenSplitter) SplitDocument(input document.Document, maxChunkSize int, overlap int) []document.Document {
+	chunks := T.SplitText(input.Text, maxChunkSize, overlap)
+	documents := []document.Document{}
+	for _, chunk := range chunks {
+		documents = append(documents, document.Document{
+			Text:     chunk,
+			Metadata: input.Metadata,
+		})
+	}
+	return documents
+}
+
+func (T *TikTokenSplitter) Len(input string) int {
+	return len(T.tkm.Encode(input, nil, nil))
 }
