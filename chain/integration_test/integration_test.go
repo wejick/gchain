@@ -120,7 +120,7 @@ func TestStuffSummarizationChainChat(t *testing.T) {
 
 func TestConversationChainChat(t *testing.T) {
 	memory := []model.ChatMessage{}
-	convoChain := conversation.NewConversationChain(chatModel, memory, callback.NewManager(), "You're helpful chatbot that answer very concisely", true)
+	convoChain := conversation.NewConversationChain(chatModel, memory, callback.NewManager(), "You're helpful chatbot that answer very concisely", false)
 
 	convoChain.AppendToMemory(model.ChatMessage{Role: model.ChatMessageRoleAssistant, Content: "Hi, My name is GioAI"})
 	output, err := convoChain.Run(context.Background(), map[string]string{"input": "what's your name?"}, model.WithTemperature(0), model.WithMaxToken(100))
@@ -136,7 +136,7 @@ func TestConversationalRetrievalChainChat(t *testing.T) {
 	memory := []model.ChatMessage{}
 	splitter, err := textsplitter.NewTikTokenSplitter(_openai.GPT3Dot5Turbo0301)
 	assert.NoError(t, err)
-	convoChain := conversational_retrieval.NewConversationalRetrievalChain(chatModel, memory, &wikipedia.Wikipedia{}, "", splitter, callback.NewManager(), "You're helpful chatbot that answer very concisely", 1000, true)
+	convoChain := conversational_retrieval.NewConversationalRetrievalChain(chatModel, memory, &wikipedia.Wikipedia{}, "", splitter, callback.NewManager(), "You're helpful chatbot that answer very concisely", 1000, false)
 
 	convoChain.AppendToMemory(model.ChatMessage{Role: model.ChatMessageRoleAssistant, Content: "Hi, My name is GioAI"})
 	convoChain.AppendToMemory(model.ChatMessage{Role: model.ChatMessageRoleUser, Content: "Who is the first president of Indonesia?"})

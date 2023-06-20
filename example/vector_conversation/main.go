@@ -12,6 +12,7 @@ import (
 	"github.com/wejick/gochain/callback"
 	"github.com/wejick/gochain/chain/conversational_retrieval"
 	weaviateVS "github.com/wejick/gochain/datastore/weaviate_vector"
+	"github.com/wejick/gochain/document"
 	"github.com/wejick/gochain/model"
 	_openai "github.com/wejick/gochain/model/openAI"
 	"github.com/wejick/gochain/textsplitter"
@@ -118,9 +119,17 @@ func Indexing() (err error) {
 		sources[idx].doc = string(data)
 	}
 
-	var docs []string
-	docs = indexingplitter.SplitText(sources[0].doc, 500, 0)
-	docs = append(docs, indexingplitter.SplitText(sources[1].doc, 500, 0)...)
+	var docs []document.Document
+	docIndonesia := document.Document{
+		Text:     sources[0].doc,
+		Metadata: map[string]interface{}{"url": sources[0].url},
+	}
+	docHistoryOfIndonesia := document.Document{Text: sources[1].doc,
+		Metadata: map[string]interface{}{"url": sources[1].url},
+	}
+
+	docs = indexingplitter.SplitDocument(docIndonesia, 500, 0)
+	docs = append(docs, indexingplitter.SplitDocument(docHistoryOfIndonesia, 500, 0)...)
 
 	bErr, err := wvClient.AddDocuments(context.Background(), "Indonesia", docs)
 	if err != nil {

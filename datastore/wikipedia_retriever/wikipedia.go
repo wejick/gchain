@@ -6,6 +6,7 @@ import (
 
 	gowiki "github.com/trietmn/go-wiki"
 	"github.com/wejick/gochain/datastore"
+	"github.com/wejick/gochain/document"
 )
 
 var _ datastore.Retriever = &Wikipedia{}
@@ -14,7 +15,7 @@ type Wikipedia struct {
 }
 
 // Search wikipedia article and return the first article's content
-func (W *Wikipedia) Search(ctx context.Context, indexName string, query string) (output []datastore.Document, err error) {
+func (W *Wikipedia) Search(ctx context.Context, indexName string, query string) (output []document.Document, err error) {
 	titles, _, err := gowiki.Search(query, 1, false)
 	if err != nil {
 		return
@@ -34,7 +35,7 @@ func (W *Wikipedia) Search(ctx context.Context, indexName string, query string) 
 		return
 	}
 
-	output = append(output, datastore.Document{Text: content})
+	output = append(output, document.Document{Text: content})
 
 	return
 }
