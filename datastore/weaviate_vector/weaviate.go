@@ -41,6 +41,7 @@ func NewWeaviateVectorStore(host string, scheme string, apiKey string, embedding
 }
 
 // SearchVector query weaviate using vector
+// for weaviate support to return additional field / metadata is not yet implemented,
 func (W *WeaviateVectorStore) SearchVector(ctx context.Context, className string, vector []float32) (output []document.Document, err error) {
 	query := W.client.GraphQL().NearVectorArgBuilder().WithVector(vector)
 	fields := []graphql.Field{
