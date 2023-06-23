@@ -24,6 +24,7 @@ type WeaviateVectorStore struct {
 }
 
 // NewWeaviateVectorStore return new Weaviate Vector Store instance
+// headers is optional, if you want to add additional headers to the request
 func NewWeaviateVectorStore(host string, scheme string, apiKey string, embeddingModel model.EmbeddingModel, headers map[string]string) (WVS *WeaviateVectorStore, err error) {
 	WVS = &WeaviateVectorStore{
 		existClass:     map[string]bool{},
@@ -42,55 +43,35 @@ func NewWeaviateVectorStore(host string, scheme string, apiKey string, embedding
 
 // SearchVector query weaviate using vector
 // for weaviate support to return additional field / metadata is not yet implemented,
-func (W *WeaviateVectorStore) SearchVector(ctx context.Context, className string, vector []float32) (output []document.Document, err error) {
+func (W *WeaviateVectorStore) SearchVector(ctx context.Context, className string, vector []float32, options ...func(*datastore.Option)) (output []document.Document, err error) {
+	opts := datastore.Option{}
+	for _, opt := range options {
+		opt(&opts)
+	}
+
 	query := W.client.GraphQL().NearVectorArgBuilder().WithVector(vector)
 	fields := []graphql.Field{
 		{Name: "text"},
+	}
+	// add additional fields
+	for _, fieldName := range opts.AdditionalFields {
+		fields = append(fields, graphql.Field{
+			Name: fieldName,
+		})
 	}
 	resp, err := W.client.GraphQL().Get().WithClassName(className).WithNearVector(query).WithFields(fields...).WithLimit(5).Do(ctx)
 	if err != nil {
 		return
 	}
 
-	/* We will get this response
-		{
-	    "data": {
-	        "Get": {
-	            "className	": [
-	                {
-	                    "answer": "DNA",
-	                    "category": "SCIENCE",
-	                    "question": "In 1953 Watson & Crick built a model of the molecular structure of this, the gene-carrying substance"
-	                },
-	                {
-	                    "answer": "Liver",
-	                    "category": "SCIENCE",
-	                    "question": "This organ removes excess glucose from the blood & stores it as glycogen"
-	                }
-	            ]
-	        }
-	    }
-		}
-	*/
-	if GetResult, getok := resp.Data["Get"].(map[string]interface{}); getok {
-		// Get the className
-		if classNameResult, classok := GetResult[className].([]interface{}); classok {
-			// Get the data
-			for _, class := range classNameResult {
-				if classMap, ok := class.(map[string]interface{}); ok {
-					output = append(output, document.Document{
-						Text: classMap["text"].(string),
-					})
-				}
-			}
-		}
-	}
+	output, err = objectsToDocument(className, resp.Data["Get"], opts.AdditionalFields)
+
 	return
 }
 
 // Search query weaviate db, the query parameter will be translated into embedding
 // the underlying query is the same with SearchVector
-func (W *WeaviateVectorStore) Search(ctx context.Context, className string, query string) (output []document.Document, err error) {
+func (W *WeaviateVectorStore) Search(ctx context.Context, className string, query string, options ...func(*datastore.Option)) (output []document.Document, err error) {
 	vectorQuery, err := W.embeddingModel.EmbedQuery(query)
 	if err != nil {
 		return
@@ -126,6 +107,55 @@ func (W *WeaviateVectorStore) AddDocuments(ctx context.Context, className string
 	for _, res := range batchResp {
 		if res.Result.Errors != nil {
 			batchErr = append(batchErr, errors.New(res.Result.Errors.Error[0].Message))
+		}
+	}
+
+	return
+}
+
+// objectsToDocument convert objects of weaviate query result to gochain document
+func objectsToDocument(className string, getObjects models.JSONObject, additionalField []string) (docs []document.Document, err error) {
+	/* Response from weaviate
+		{
+	    "data": {
+	        "Get": {
+	            "className	": [
+	                {
+	                    "answer": "DNA",
+	                    "category": "SCIENCE",
+	                    "question": "In 1953 Watson & Crick built a model of the molecular structure of this, the gene-carrying substance"
+	                },
+	                {
+	                    "answer": "Liver",
+	                    "category": "SCIENCE",
+	                    "question": "This organ removes excess glucose from the blood & stores it as glycogen"
+	                }
+	            ]
+	        }
+	    }
+		}
+	*/
+
+	Get, ok := getObjects.(map[string]interface{})
+	if !ok {
+		return
+	}
+
+	result, ok := Get[className].([]interface{})
+	if !ok {
+		return
+	}
+
+	for _, data := range result {
+		if dataMap, ok := data.(map[string]interface{}); ok {
+			doc := document.Document{
+				Text:     dataMap["text"].(string),
+				Metadata: make(map[string]interface{}),
+			}
+			for _, field := range additionalField {
+				doc.Metadata[field] = dataMap[field]
+			}
+			docs = append(docs, doc)
 		}
 	}
 
