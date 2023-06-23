@@ -3,6 +3,7 @@ module github.com/wejick/gochain
 go 1.20
 
 require (
+	github.com/elastic/go-elasticsearch/v8 v8.8.1
 	github.com/pkoukk/tiktoken-go v0.1.2
 	github.com/sashabaranov/go-openai v1.10.1
 	github.com/stretchr/testify v1.8.3
@@ -12,6 +13,7 @@ require (
 )
 
 require (
+	github.com/elastic/elastic-transport-go/v8 v8.3.0 // indirect
 	github.com/k0kubun/colorstring v0.0.0-20150214042306-9440f1994b88 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.16 // indirect
