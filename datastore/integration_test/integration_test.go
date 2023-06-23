@@ -7,11 +7,13 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/sashabaranov/go-openai"
 	"github.com/stretchr/testify/assert"
 	"github.com/wejick/gochain/callback"
+	elasticsearchVS "github.com/wejick/gochain/datastore/elasticsearch_vector"
 	weaviateVS "github.com/wejick/gochain/datastore/weaviate_vector"
 	wikipedia "github.com/wejick/gochain/datastore/wikipedia_retriever"
 	"github.com/wejick/gochain/document"
@@ -23,6 +25,10 @@ var llmModel model.LLMModel
 var embeddingModel model.EmbeddingModel
 
 var OAIauthToken = os.Getenv("OPENAI_API_KEY")
+
+var className string
+var story string
+var stories []document.Document
 
 const (
 	wvhost   = "question-testing-twjfnqyp.weaviate.network"
@@ -36,6 +42,15 @@ func TestMain(m *testing.M) {
 	llmModel = _openai.NewOpenAIModel(OAIauthToken, "", "text-ada-001", callback.NewManager(), true)
 	embeddingModel = _openai.NewOpenAIEmbedModel(OAIauthToken, "", openai.AdaEmbeddingV2)
 
+	className = "Story"
+	story = "In the depths of the forest, a lone wolf found an abandoned puppy and raised it as its own. Years later, the once-lonely wolf and the playful dog became an inseparable duo, roaming the wilderness together."
+	stories = []document.Document{
+		{Text: "As the sun set over the city skyline, a street musician's haunting melody caught the attention of a passerby, transporting them to a world of forgotten dreams and lost love in just a few melancholic notes."},
+		{Text: "In a bustling café, a barista noticed a regular customer's worn-out shoes and secretly left a brand new pair beside their table, inspiring a ripple of anonymous acts of kindness that spread throughout the community."},
+		{Text: "A bookworm stumbled upon a dusty, forgotten tome in the attic, and with each turn of the page, they were transported to extraordinary worlds, becoming the hero of their own epic adventures."},
+		{Text: "As the rain poured relentlessly, a gardener watched in awe as her wilting flowers began to bloom, realizing that sometimes the greatest growth comes from enduring the storms of life."},
+	}
+
 	exitCode := m.Run()
 
 	os.Exit(exitCode)
@@ -44,15 +59,6 @@ func TestMain(m *testing.M) {
 func TestWeaviate(t *testing.T) {
 	wvClient, err := weaviateVS.NewWeaviateVectorStore(wvhost, wvscheme, wvApiKey, embeddingModel, nil)
 	assert.NoError(t, err, err)
-
-	className := "Story"
-	story := "In the depths of the forest, a lone wolf found an abandoned puppy and raised it as its own. Years later, the once-lonely wolf and the playful dog became an inseparable duo, roaming the wilderness together."
-	stories := []document.Document{
-		{Text: "As the sun set over the city skyline, a street musician's haunting melody caught the attention of a passerby, transporting them to a world of forgotten dreams and lost love in just a few melancholic notes."},
-		{Text: "In a bustling café, a barista noticed a regular customer's worn-out shoes and secretly left a brand new pair beside their table, inspiring a ripple of anonymous acts of kindness that spread throughout the community."},
-		{Text: "A bookworm stumbled upon a dusty, forgotten tome in the attic, and with each turn of the page, they were transported to extraordinary worlds, becoming the hero of their own epic adventures."},
-		{Text: "As the rain poured relentlessly, a gardener watched in awe as her wilting flowers began to bloom, realizing that sometimes the greatest growth comes from enduring the storms of life."},
-	}
 
 	err = wvClient.AddText(context.Background(), className, story)
 	assert.NoError(t, err, "AddText")
@@ -100,4 +106,35 @@ func TestWikipedia(t *testing.T) {
 	for _, res := range result {
 		assert.Contains(t, res.Text, "Indonesia")
 	}
+}
+
+func TestElastic(t *testing.T) {
+	esClient, err := elasticsearchVS.NewElasticsearchVectorStore("http://localhost:9200", embeddingModel)
+	assert.NoError(t, err)
+
+	batchErr, err := esClient.AddDocuments(context.Background(), strings.ToLower(className), stories)
+	assert.NoError(t, err, "addDocuments")
+	for _, e := range batchErr {
+		assert.NoError(t, e, "addDocuments batchErr")
+	}
+
+	response, err := esClient.Search(context.Background(), strings.ToLower(className), "city skyline")
+	assert.NoError(t, err)
+	if len(response) > 0 {
+		assert.Contains(t, response[0].Text, "skyline")
+	} else {
+		t.Error("response is empty")
+	}
+
+	vectorQuery, err := embeddingModel.EmbedQuery("city skyline")
+	response, err = esClient.SearchVector(context.Background(), strings.ToLower(className), vectorQuery)
+	assert.NoError(t, err)
+	if len(response) > 0 {
+		assert.Contains(t, response[0].Text, "skyline")
+	} else {
+		t.Error("response is empty")
+	}
+
+	err = esClient.DeleteIndex(context.Background(), strings.ToLower(className))
+	assert.NoError(t, err)
 }
