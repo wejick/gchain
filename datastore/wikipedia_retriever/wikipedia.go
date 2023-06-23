@@ -15,7 +15,7 @@ type Wikipedia struct {
 }
 
 // Search wikipedia article and return the first article's content
-func (W *Wikipedia) Search(ctx context.Context, indexName string, query string) (output []document.Document, err error) {
+func (W *Wikipedia) Search(ctx context.Context, indexName string, query string, options ...func(*datastore.Option)) (output []document.Document, err error) {
 	titles, _, err := gowiki.Search(query, 1, false)
 	if err != nil {
 		return

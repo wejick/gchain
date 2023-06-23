@@ -13,6 +13,7 @@ import (
 	"github.com/sashabaranov/go-openai"
 	"github.com/stretchr/testify/assert"
 	"github.com/wejick/gochain/callback"
+	"github.com/wejick/gochain/datastore"
 	elasticsearchVS "github.com/wejick/gochain/datastore/elasticsearch_vector"
 	weaviateVS "github.com/wejick/gochain/datastore/weaviate_vector"
 	wikipedia "github.com/wejick/gochain/datastore/wikipedia_retriever"
@@ -31,9 +32,9 @@ var story string
 var stories []document.Document
 
 const (
-	wvhost   = "question-testing-twjfnqyp.weaviate.network"
+	wvhost   = "story-0f32a7zl.weaviate.network"
 	wvscheme = "https"
-	wvApiKey = "eDCEmuH6HZ6C8rbnlZFvROUGGyfzsZnwbt8j"
+	wvApiKey = "QWaJ4930vqHSHcPzMoIIoe754xTcVpFaq4AD"
 )
 
 func TestMain(m *testing.M) {
@@ -41,14 +42,17 @@ func TestMain(m *testing.M) {
 
 	llmModel = _openai.NewOpenAIModel(OAIauthToken, "", "text-ada-001", callback.NewManager(), true)
 	embeddingModel = _openai.NewOpenAIEmbedModel(OAIauthToken, "", openai.AdaEmbeddingV2)
-
+	metadata := map[string]interface{}{
+		"url":  "https://wejick.wordpress.com",
+		"time": 1847,
+	}
 	className = "Story"
 	story = "In the depths of the forest, a lone wolf found an abandoned puppy and raised it as its own. Years later, the once-lonely wolf and the playful dog became an inseparable duo, roaming the wilderness together."
 	stories = []document.Document{
-		{Text: "As the sun set over the city skyline, a street musician's haunting melody caught the attention of a passerby, transporting them to a world of forgotten dreams and lost love in just a few melancholic notes."},
-		{Text: "In a bustling café, a barista noticed a regular customer's worn-out shoes and secretly left a brand new pair beside their table, inspiring a ripple of anonymous acts of kindness that spread throughout the community."},
-		{Text: "A bookworm stumbled upon a dusty, forgotten tome in the attic, and with each turn of the page, they were transported to extraordinary worlds, becoming the hero of their own epic adventures."},
-		{Text: "As the rain poured relentlessly, a gardener watched in awe as her wilting flowers began to bloom, realizing that sometimes the greatest growth comes from enduring the storms of life."},
+		{Text: "As the sun set over the city skyline, a street musician's haunting melody caught the attention of a passerby, transporting them to a world of forgotten dreams and lost love in just a few melancholic notes.", Metadata: metadata},
+		{Text: "In a bustling café, a barista noticed a regular customer's worn-out shoes and secretly left a brand new pair beside their table, inspiring a ripple of anonymous acts of kindness that spread throughout the community.", Metadata: metadata},
+		{Text: "A bookworm stumbled upon a dusty, forgotten tome in the attic, and with each turn of the page, they were transported to extraordinary worlds, becoming the hero of their own epic adventures.", Metadata: metadata},
+		{Text: "As the rain poured relentlessly, a gardener watched in awe as her wilting flowers began to bloom, realizing that sometimes the greatest growth comes from enduring the storms of life.", Metadata: metadata},
 	}
 
 	exitCode := m.Run()
@@ -78,10 +82,13 @@ func TestWeaviate(t *testing.T) {
 	}
 
 	vectorQuery, err := embeddingModel.EmbedQuery("city skyline")
-	response, err = wvClient.SearchVector(context.Background(), className, vectorQuery)
+	response, err = wvClient.SearchVector(context.Background(), className, vectorQuery, datastore.WithAdditionalFields([]string{"url", "time", "nothing"}))
 	assert.NoError(t, err)
 	if len(response) > 0 {
 		assert.Contains(t, response[0].Text, "skyline")
+		assert.Equal(t, response[0].Metadata["url"], "https://wejick.wordpress.com")
+		assert.Equal(t, response[0].Metadata["time"], 1847)
+		assert.Equal(t, response[0].Metadata["nothing"], nil)
 	} else {
 		t.Error("response is empty")
 	}
@@ -127,10 +134,14 @@ func TestElastic(t *testing.T) {
 	}
 
 	vectorQuery, err := embeddingModel.EmbedQuery("city skyline")
-	response, err = esClient.SearchVector(context.Background(), strings.ToLower(className), vectorQuery)
+	response, err = esClient.SearchVector(context.Background(), strings.ToLower(className), vectorQuery, datastore.WithAdditionalFields([]string{"url", "time", "nothing"}))
 	assert.NoError(t, err)
 	if len(response) > 0 {
 		assert.Contains(t, response[0].Text, "skyline")
+		assert.Contains(t, response[0].Text, "skyline")
+		assert.Equal(t, response[0].Metadata["url"], "https://wejick.wordpress.com")
+		assert.Equal(t, response[0].Metadata["time"], float64(1847))
+		assert.Equal(t, response[0].Metadata["nothing"], nil)
 	} else {
 		t.Error("response is empty")
 	}
