@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+
+<head>
+    <style>
+        /* General CSS Setup */
+        body {
+            background-color: lightblue;
+            font-family: "Ubuntu-Italic", "Lucida Sans", helvetica, sans;
+        }
+
+        /* CSS talk bubble */
+        .talk-bubble {
+            margin: 10px;
+            position: relative;
+            width: 350px;
+            height: auto;
+            padding: 40px;
+            background-color: lightyellow;
+        }
+
+        .talk-bubble-ai {
+            margin: 10px;
+            position: relative;
+            width: 350px;
+            height: auto;
+            padding: 40px;
+            color: white;
+            background-color: rgb(66, 113, 255);
+        }
+
+        .round {
+            border-radius: 30px;
+        }
+
+        /* talk bubble contents */
+        .talktext {
+            padding: 1em;
+            text-align: left;
+            line-height: 1.5em;
+        }
+
+        .container {
+            min-width: 400px;
+            width: 40%;
+            margin: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div id="chat"></div>
+        <form id="chat_form">
+            <input id="message" type="text" placeholder="message" style="width: 60%;padding: 10px;" class="round" />
+            <input class="button" type="submit" value="Submit" role="button" style="padding: 10px;">
+        </form>
+    </div>
+
+    <script>
+        const connection = new WebSocket(" ws://127.0.0.1:8000/chat"); var counter = 0; new_chat_placeholder();
+        connection.onopen = (event) => {
+            console.log("WebSocket is open now.");
+        };
+
+        connection.onclose = (event) => {
+            console.log("WebSocket is closed now.");
+        };
+
+        connection.onerror = (event) => {
+            console.error("WebSocket error observed:", event);
+        };
+
+        connection.onmessage = (event) => {
+            // append received message from the server to the DOM element
+            const chat = document.querySelector("#" + get_current_chat_id());
+            var message = JSON.parse(event.data)
+            chat.innerHTML += message.text;
+        };
+
+        document.getElementById('chat_form').addEventListener('submit', function (event) {
+            event.preventDefault(); // Prevents the default form submission
+
+            const message = document.querySelector("#message");
+            const data = `{"message": "${message.value}","kind":"chat"}`;
+
+            // create new message place holder here
+            counter++;
+            new_user_chat(message.value);
+            new_chat_placeholder();
+
+            // Send composed message to the server
+            connection.send(data);
+
+            // clear input fields
+            message.value = "";
+
+        });
+
+        function new_chat_placeholder() {
+            const chat = document.querySelector("#chat");
+            const newChat = document.createElement("div");
+            newChat.id = get_current_chat_id();
+            newChat.className = "talk-bubble-ai round talktext";
+            chat.appendChild(newChat);
+        }
+        function new_user_chat(message) {
+            const chat = document.querySelector("#chat");
+            const newChat = document.createElement("div");
+            newChat.id = 'chat-user-' + counter;
+            newChat.className = "talk-bubble round talktext";
+            newChat.innerHTML += message;
+            chat.appendChild(newChat);
+        }
+        function get_current_chat_id() {
+            return 'chat-' + counter;
+        }
+        function new_message(data) {
+            return `<div id='chat-user-${counter}'>Me : ` + data + "</div>";
+        }
+    </script>
+</body>
+
+</html>
