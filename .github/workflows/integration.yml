@@ -26,6 +26,8 @@ jobs:
     
     - name: Run Compose
       uses: isbang/compose-action@v1.4.1
+      env:
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       with:
         compose-file: "./dev_compose.yaml"
 
