@@ -1,0 +1,55 @@
+# This workflow will build a golang project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
+
+name: Integration test
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      weaviate:
+        image: semitechnologies/weaviate:1.19.8
+        ports:
+          - 8080:8080
+        env:
+          QUERY_DEFAULTS_LIMIT: 25
+          AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: 'true'
+          PERSISTENCE_DATA_PATH: '/var/lib/weaviate'
+          DEFAULT_VECTORIZER_MODULE: 'none'
+          CLUSTER_HOSTNAME: 'node1'
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Go
+      uses: actions/setup-go@v3
+      with:
+        go-version-file: 'go.mod'
+        check-latest: true
+        cache: true
+
+    - name: Set up gotestfmt
+      run: go install github.com/gotesttools/gotestfmt/v2/cmd/gotestfmt@latest
+
+    - name: Test
+      env:
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      run: |
+        set -euo pipefail
+        env INTEGRATION_SKIP_ES=true go test -json -v -tags=integration ./... 2>&1 | tee /tmp/gotest_integration.log | gotestfmt
+
+    - name: Upload test log
+      uses: actions/upload-artifact@v2
+      if: always()
+      with:
+        name: test-log
+        path: /tmp/gotest_integration.log
+        if-no-files-found: error

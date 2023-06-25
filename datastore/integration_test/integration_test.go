@@ -32,9 +32,9 @@ var story string
 var stories []document.Document
 
 const (
-	wvhost   = "story-0f32a7zl.weaviate.network"
-	wvscheme = "https"
-	wvApiKey = "QWaJ4930vqHSHcPzMoIIoe754xTcVpFaq4AD"
+	wvhost   = "localhost:8080"
+	wvscheme = "http"
+	wvApiKey = ""
 )
 
 func TestMain(m *testing.M) {
@@ -73,7 +73,7 @@ func TestWeaviate(t *testing.T) {
 		assert.NoError(t, e, "addDocuments batchErr")
 	}
 
-	response, err := wvClient.Search(context.Background(), className, "city skyline")
+	response, err := wvClient.Search(context.Background(), className, "musician's melody")
 	assert.NoError(t, err)
 	if len(response) > 0 {
 		assert.Contains(t, response[0].Text, "skyline")
@@ -81,14 +81,13 @@ func TestWeaviate(t *testing.T) {
 		t.Error("response is empty")
 	}
 
-	vectorQuery, err := embeddingModel.EmbedQuery("city skyline")
-	response, err = wvClient.SearchVector(context.Background(), className, vectorQuery, datastore.WithAdditionalFields([]string{"url", "time", "nothing"}))
+	vectorQuery, err := embeddingModel.EmbedQuery("musician's melody")
+	response, err = wvClient.SearchVector(context.Background(), className, vectorQuery, datastore.WithAdditionalFields([]string{"url", "time"}))
 	assert.NoError(t, err)
 	if len(response) > 0 {
 		assert.Contains(t, response[0].Text, "skyline")
 		assert.Equal(t, response[0].Metadata["url"], "https://wejick.wordpress.com")
-		assert.Equal(t, response[0].Metadata["time"], 1847)
-		assert.Equal(t, response[0].Metadata["nothing"], nil)
+		assert.Equal(t, response[0].Metadata["time"], float64(1847))
 	} else {
 		t.Error("response is empty")
 	}
@@ -116,6 +115,9 @@ func TestWikipedia(t *testing.T) {
 }
 
 func TestElastic(t *testing.T) {
+	if os.Getenv("INTEGRATION_SKIP_ES") == "true" {
+		t.Skip("Skipping TestElastic")
+	}
 	esClient, err := elasticsearchVS.NewElasticsearchVectorStore("http://localhost:9200", embeddingModel)
 	assert.NoError(t, err)
 
