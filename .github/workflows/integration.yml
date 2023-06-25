@@ -22,12 +22,11 @@ jobs:
         go-version-file: 'go.mod'
         check-latest: true
         cache: true
-        
-    - name: Build
-      run: go build -v ./...
+    
+    - name: Run Compose
+      uses: isbang/compose-action@v1.4.1
+      with:
+        compose-file: "./dev_compose.yaml"
 
     - name: Test
-      run: go test -v ./...
-
-    - name: Build examples
-      run: make build-example
+      run: make integration-test
