@@ -13,7 +13,7 @@ import (
 // DataStore is the interface for storing and retrieving data
 type DataStore interface {
 	// Search using a query string
-	Search(ctx context.Context, indexName string, query string) ([]document.Document, error)
+	Search(ctx context.Context, indexName string, query string, options ...func(*Option)) ([]document.Document, error)
 	// AddText store text to vector index
 	// it will also store embedding of the text using specified embedding model
 	// If the index doesnt exist, it will create one with default schema
@@ -30,7 +30,7 @@ type DataStore interface {
 type VectorStore interface {
 	DataStore
 	//SearchVector by providing the vector from embedding function
-	SearchVector(ctx context.Context, indexName string, vector []float32) ([]document.Document, error)
+	SearchVector(ctx context.Context, indexName string, vector []float32, options ...func(*Option)) ([]document.Document, error)
 }
 
 // Retriever is the interface for retrieving data
@@ -38,12 +38,31 @@ type VectorStore interface {
 // DataStore and VectorStore are interface compatible with retriever
 type Retriever interface {
 	// Search using a query string
-	Search(ctx context.Context, indexName string, query string) ([]document.Document, error)
+	Search(ctx context.Context, indexName string, query string, options ...func(*Option)) ([]document.Document, error)
 }
 
 // Option
 // vectorstore you use may not support everything
 type Option struct {
-	Limit      int64   // max result to return
-	Similarity float32 // minimum similarity score
+	Limit            int64    // max result to return
+	Similarity       float32  // minimum similarity score
+	AdditionalFields []string // list of fields to return, Text field is always returned part of the Document
+}
+
+func WithLimit(limit int64) func(*Option) {
+	return func(o *Option) {
+		o.Limit = limit
+	}
+}
+
+func WithAdditionalFields(fields []string) func(*Option) {
+	return func(o *Option) {
+		o.AdditionalFields = fields
+	}
+}
+
+func WithSimilarity(similarity float32) func(*Option) {
+	return func(o *Option) {
+		o.Similarity = similarity
+	}
 }

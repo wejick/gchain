@@ -50,18 +50,6 @@ type ElasticsearchVectorStore struct {
 	embeddingModel model.EmbeddingModel
 }
 
-type respEnvelope struct {
-	Hits struct {
-		Total struct {
-			Value int
-		}
-		Hits []struct {
-			ID     string          `json:"_id"`
-			Source json.RawMessage `json:"_source"`
-		}
-	}
-}
-
 // NewElasticsearchVectorStore return new Elasticsearch instance
 func NewElasticsearchVectorStore(host string, embeddingModel model.EmbeddingModel, esOption ...func(*ESOption)) (EVS *ElasticsearchVectorStore, err error) {
 	opts := ESOption{}
@@ -90,12 +78,12 @@ func NewElasticsearchVectorStore(host string, embeddingModel model.EmbeddingMode
 }
 
 // Search using a query string
-func (ES *ElasticsearchVectorStore) Search(ctx context.Context, indexName string, query string) (docs []document.Document, err error) {
+func (ES *ElasticsearchVectorStore) Search(ctx context.Context, indexName string, query string, options ...func(*datastore.Option)) (docs []document.Document, err error) {
 	vector, err := ES.embeddingModel.EmbedQuery(query)
 	if err != nil {
 		return
 	}
-	docs, err = ES.SearchVector(ctx, indexName, vector)
+	docs, err = ES.SearchVector(ctx, indexName, vector, options...)
 
 	return
 }
@@ -143,11 +131,14 @@ func (ES *ElasticsearchVectorStore) DeleteIndex(ctx context.Context, indexName s
 }
 
 // SearchVector by providing the vector from embedding function
-func (ES *ElasticsearchVectorStore) SearchVector(ctx context.Context, indexName string, vector []float32) (docs []document.Document, err error) {
+func (ES *ElasticsearchVectorStore) SearchVector(ctx context.Context, indexName string, vector []float32, options ...func(*datastore.Option)) (docs []document.Document, err error) {
+	opts := datastore.Option{}
+	for _, opt := range options {
+		opt(&opts)
+	}
+
 	R := search.NewRequest()
-	// R.Fields = []types.FieldAndFormat{
-	// 	{Field: "text"},
-	// }
+
 	R.Knn = []types.KnnQuery{{
 		Field:         "vector",
 		QueryVector:   vector,
@@ -159,16 +150,8 @@ func (ES *ElasticsearchVectorStore) SearchVector(ctx context.Context, indexName 
 	if err != nil {
 		return
 	}
-	Hits := resp.Hits.Hits
-	for _, hit := range Hits {
-		var source map[string]interface{}
-		err = json.Unmarshal(hit.Source_, &source)
-		if err != nil {
-			log.Println(err)
-			continue
-		}
-		docs = append(docs, document.Document{Text: source["text"].(string)})
-	}
+
+	docs, err = hitToDocs(resp.Hits.Hits, opts.AdditionalFields)
 
 	return
 }
@@ -197,7 +180,29 @@ func dataToESDoc(documents []document.Document, vector [][]float32) (output []el
 			"text":   doc.Text,
 			"vector": vector[idx],
 		}
+		// put metadata
+		for k, v := range doc.Metadata {
+			output[idx][k] = v
+		}
 	}
 
+	return
+}
+
+// hitToDocs convert es hits to document
+func hitToDocs(hits []types.Hit, additionalFields []string) (docs []document.Document, err error) {
+	for _, hit := range hits {
+		var source map[string]interface{}
+		err = json.Unmarshal(hit.Source_, &source)
+		if err != nil {
+			log.Println(err)
+			continue
+		}
+		doc := document.Document{Text: source["text"].(string), Metadata: make(map[string]interface{})}
+		for _, field := range additionalFields {
+			doc.Metadata[field] = source[field]
+		}
+		docs = append(docs, doc)
+	}
 	return
 }
