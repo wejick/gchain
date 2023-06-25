@@ -49,7 +49,11 @@ func (W *WeaviateVectorStore) SearchVector(ctx context.Context, className string
 		opt(&opts)
 	}
 
-	query := W.client.GraphQL().NearVectorArgBuilder().WithVector(vector)
+	if opts.Similarity == 0 {
+		opts.Similarity = 0.8
+	}
+
+	query := W.client.GraphQL().NearVectorArgBuilder().WithVector(vector).WithCertainty(opts.Similarity)
 	fields := []graphql.Field{
 		{Name: "text"},
 	}
@@ -188,6 +192,7 @@ func (W *WeaviateVectorStore) createClassIfNotExist(ctx context.Context, classNa
 		if err != nil {
 			return
 		}
+		W.existClass[className] = true
 	}
 
 	return
