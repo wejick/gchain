@@ -9,5 +9,11 @@ Datastore package define several interfaces for gochain to interact with data st
     Provide simplified interface to get data from outside world, intended to interact in read only manner.
 
 Datastore and Vectorstore will always compatible with Retriever interface, make it easy to build application that needs external data.
+
+Datastore available:
+1. ElasticSearch Vectorstore
+2. Weaviate Vectorstore
+3. Wikipedia Retriever
 */
+
 package datastore

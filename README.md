@@ -1,9 +1,32 @@
-# GoChain
 [![Go Reference](https://pkg.go.dev/badge/github.com/wejick/gochain.svg)](https://pkg.go.dev/github.com/wejick/gochain)
 ![Build workflow](https://github.com/wejick/gochain/actions/workflows/go.yml/badge.svg)
 [![Integration test](https://github.com/wejick/gochain/actions/workflows/integration.yml/badge.svg)](https://github.com/wejick/gochain/actions/workflows/integration.yml)
 
-Langchain-inspired framework to work with LLM in Golang
+
+# 🤔 What is this?
+Inspired by [langchain](https://github.com/hwchase17/langchain) to provide composability when building Large Language Model Application. GoChain mission is to bring langchain concept to Go in idiomatic way.
+
+This Library will help on many usecases, such as :
+
+**❓ Question Answering over specific documents**
+- [Building chatbot with vector databased backed knowledge base](https://wejick.wordpress.com/2023/06/18/building-llm-based-chatbot-with-a-knowledge-base-in-go/)
+
+**💬 Chatbots**
+- [Streaming Chatbot with Go and WebSocket](https://wejick.wordpress.com/2023/06/24/making-an-llm-based-streaming-chatbot-with-go-and-websocket/)
+
+**📄 Document Summarization**
+
+
+## Install and Importing
+
+```bash
+$ go get github.com/wejick/gochain
+```
+
+```golang
+import "github.com/wejick/gochain
+```
+
 
 ## Example
 ```golang

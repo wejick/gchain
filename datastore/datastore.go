@@ -6,10 +6,6 @@ import (
 	"github.com/wejick/gochain/document"
 )
 
-// TODO :
-// function to create index with specified schema
-// ability to pass extra option to the vectorstore like minimum distance, certainty, limit, and many other
-
 // DataStore is the interface for storing and retrieving data
 type DataStore interface {
 	// Search using a query string
@@ -41,26 +37,30 @@ type Retriever interface {
 	Search(ctx context.Context, indexName string, query string, options ...func(*Option)) ([]document.Document, error)
 }
 
-// Option
-// vectorstore you use may not support everything
+// Option give way to pass additional parameter to the datastore
 type Option struct {
 	Limit            int64    // max result to return
 	Similarity       float32  // minimum similarity score
 	AdditionalFields []string // list of fields to return, Text field is always returned part of the Document
 }
 
+// WithLimit set the limit of the result
 func WithLimit(limit int64) func(*Option) {
 	return func(o *Option) {
 		o.Limit = limit
 	}
 }
 
+// WithAdditionalFields set the additional fields to query
+// Some datastore has different way to handle non existent field, some return empty some return error
 func WithAdditionalFields(fields []string) func(*Option) {
 	return func(o *Option) {
 		o.AdditionalFields = fields
 	}
 }
 
+// WithSimilarity set the minimum similarity score
+// Different datastore has different way to handle similarity score
 func WithSimilarity(similarity float32) func(*Option) {
 	return func(o *Option) {
 		o.Similarity = similarity
