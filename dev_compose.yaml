@@ -1,7 +1,7 @@
 version: '3.4'
 services:
   dev_elasticsearch:
-    image: bitnami/elasticsearch:latest
+    image: bitnami/elasticsearch:8.8.1
     container_name: dev_elasticsearch
     restart: always
     ports:

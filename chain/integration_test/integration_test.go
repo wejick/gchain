@@ -73,7 +73,7 @@ func TestStuffSummarizationChain(t *testing.T) {
 	In the end to get some clarity on the sprite plotting specifically I started to transcribe what was thought to be the sprite logic portion of the schematic into Proteus, since it can simulate digital electronics really well.`)
 
 	assert.NoError(t, err)
-	t.Log(output)
+	assert.NotEmpty(t, output)
 
 }
 
@@ -97,7 +97,7 @@ func TestMapReduceSummarizationChain(t *testing.T) {
 	output, err := chain.Run(context.Background(), testDoc, model.WithMaxToken(200))
 	assert.NoError(t, err, "error Run(context.Background(), testDoc, model.MaxToken(200))")
 
-	t.Log(output)
+	assert.NotEmpty(t, output)
 
 }
 
@@ -115,7 +115,7 @@ func TestStuffSummarizationChainChat(t *testing.T) {
 	In the end to get some clarity on the sprite plotting specifically I started to transcribe what was thought to be the sprite logic portion of the schematic into Proteus, since it can simulate digital electronics really well.`)
 
 	assert.NoError(t, err)
-	t.Log(output)
+	assert.NotEmpty(t, output)
 }
 
 func TestConversationChainChat(t *testing.T) {
@@ -127,9 +127,8 @@ func TestConversationChainChat(t *testing.T) {
 	assert.NoError(t, err)
 
 	outputString, err := convoChain.SimpleRun(context.Background(), "so your name is gioAI", model.WithTemperature(0), model.WithMaxToken(100))
-
-	t.Log(output["output"])
-	t.Log(outputString)
+	assert.NotEmpty(t, outputString)
+	assert.NotNil(t, output["output"])
 }
 
 func TestConversationalRetrievalChainChat(t *testing.T) {
@@ -143,6 +142,6 @@ func TestConversationalRetrievalChainChat(t *testing.T) {
 	convoChain.AppendToMemory(model.ChatMessage{Role: model.ChatMessageRoleAssistant, Content: "The first president of indonesia was Soekarno"})
 
 	response, err := convoChain.Run(context.Background(), map[string]string{"input": "tell me little bit more about soekarno?"}, model.WithTemperature(0.3), model.WithMaxToken(1000))
-	t.Log(response)
+	assert.NotNil(t, response["input"])
 	assert.NoError(t, err)
 }

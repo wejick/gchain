@@ -115,6 +115,9 @@ func TestWikipedia(t *testing.T) {
 }
 
 func TestElastic(t *testing.T) {
+	if os.Getenv("INTEGRATION_SKIP_ES") == "true" {
+		t.Skip("Skipping TestElastic")
+	}
 	esClient, err := elasticsearchVS.NewElasticsearchVectorStore("http://localhost:9200", embeddingModel)
 	assert.NoError(t, err)
 

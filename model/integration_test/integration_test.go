@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/sashabaranov/go-openai"
+	"github.com/stretchr/testify/assert"
 	"github.com/wejick/gochain/callback"
 	"github.com/wejick/gochain/model"
 	_openai "github.com/wejick/gochain/model/openAI"
@@ -31,13 +32,10 @@ func TestMain(m *testing.M) {
 var authToken = os.Getenv("OPENAI_API_KEY")
 
 func TestOpenAICall(t *testing.T) {
-	var testModel = _openai.NewOpenAIModel(authToken, "", "text-ada-001", callback.NewManager(), true)
+	var testModel = _openai.NewOpenAIModel(authToken, "", "text-ada-001", callback.NewManager(), false)
 	output, err := testModel.Call(context.Background(), "we are us, we are us, we are ", model.WithTemperature(0))
-	if err != nil {
-		t.Error(err)
-	} else {
-		t.Log("output : ", output)
-	}
+	assert.NoError(t, err)
+	assert.NotEmpty(t, output)
 }
 
 func TestOpenAIChat(t *testing.T) {
@@ -47,11 +45,8 @@ func TestOpenAIChat(t *testing.T) {
 		{Role: model.ChatMessageRoleUser, Content: "Answer in short and directly, Jakarta is capital city of what ?"},
 	}
 	output, err := testModel.Chat(context.Background(), testMessages)
-	if err != nil {
-		t.Error(err)
-	} else {
-		t.Log("output : ", output)
-	}
+	assert.NoError(t, err)
+	assert.NotEmpty(t, output)
 }
 
 func TestOpenAIChatCall(t *testing.T) {
