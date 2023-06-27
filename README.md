@@ -1,8 +1,9 @@
 # GoChain
 [![Go Reference](https://pkg.go.dev/badge/github.com/wejick/gochain.svg)](https://pkg.go.dev/github.com/wejick/gochain)
 ![Build workflow](https://github.com/wejick/gochain/actions/workflows/go.yml/badge.svg)
+[![Integration test](https://github.com/wejick/gochain/actions/workflows/integration.yml/badge.svg)](https://github.com/wejick/gochain/actions/workflows/integration.yml)
 
-Langchain inspired framework to work with LLM in golang
+Langchain-inspired framework to work with LLM in Golang
 
 ## Example
 ```golang
@@ -15,6 +16,8 @@ outputMap, err := chain.Run(context.Background(), map[string]string{"input": "In
 fmt.Println(outputMap["output"])
 ```
 More example in the [example](./example/) folder
+
+As our documentation is not yet complete, please refer to examples and integration test for reference.
 
 ## Notice
 1. Don't use it if you have better option
