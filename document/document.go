@@ -1,6 +1,6 @@
 package document
 
-// Document is the data structure that will be the main building block of data processed by gochain
+// Document is the data structure that will be the main building block of data processed by gchain
 type Document struct {
 	Text     string
 	Metadata map[string]interface{}

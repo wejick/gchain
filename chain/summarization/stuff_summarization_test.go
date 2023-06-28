@@ -4,9 +4,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/wejick/gochain/callback"
-	"github.com/wejick/gochain/chain/llm_chain"
-	"github.com/wejick/gochain/model"
+	"github.com/wejick/gchain/callback"
+	"github.com/wejick/gchain/chain/llm_chain"
+	"github.com/wejick/gchain/model"
 )
 
 var echoLlmChain, _ = llm_chain.NewLLMChain(&model.LLMModelMock{

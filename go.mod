@@ -1,4 +1,4 @@
-module github.com/wejick/gochain
+module github.com/wejick/gchain
 
 go 1.20
 

@@ -3,7 +3,7 @@ package combine_document
 import (
 	"context"
 
-	"github.com/wejick/gochain/model"
+	"github.com/wejick/gchain/model"
 )
 
 type CombinedDocument interface {

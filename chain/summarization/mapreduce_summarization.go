@@ -4,12 +4,12 @@ import (
 	"context"
 	"errors"
 
-	"github.com/wejick/gochain/chain"
-	"github.com/wejick/gochain/chain/combine_document"
-	"github.com/wejick/gochain/chain/llm_chain"
-	"github.com/wejick/gochain/model"
-	"github.com/wejick/gochain/prompt"
-	"github.com/wejick/gochain/textsplitter"
+	"github.com/wejick/gchain/chain"
+	"github.com/wejick/gchain/chain/combine_document"
+	"github.com/wejick/gchain/chain/llm_chain"
+	"github.com/wejick/gchain/model"
+	"github.com/wejick/gchain/prompt"
+	"github.com/wejick/gchain/textsplitter"
 )
 
 const (

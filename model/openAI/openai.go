@@ -4,8 +4,8 @@ import (
 	"context"
 
 	goopenai "github.com/sashabaranov/go-openai"
-	"github.com/wejick/gochain/callback"
-	model "github.com/wejick/gochain/model"
+	"github.com/wejick/gchain/callback"
+	model "github.com/wejick/gchain/model"
 )
 
 type OpenAIModel struct {

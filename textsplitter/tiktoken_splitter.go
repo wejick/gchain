@@ -4,7 +4,7 @@ import (
 	"strings"
 
 	"github.com/pkoukk/tiktoken-go"
-	"github.com/wejick/gochain/document"
+	"github.com/wejick/gchain/document"
 )
 
 type TikTokenSplitter struct {

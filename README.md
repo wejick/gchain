@@ -1,10 +1,10 @@
-[![Go Reference](https://pkg.go.dev/badge/github.com/wejick/gochain.svg)](https://pkg.go.dev/github.com/wejick/gochain)
-![Build workflow](https://github.com/wejick/gochain/actions/workflows/go.yml/badge.svg)
-[![Integration test](https://github.com/wejick/gochain/actions/workflows/integration.yml/badge.svg)](https://github.com/wejick/gochain/actions/workflows/integration.yml)
+[![Go Reference](https://pkg.go.dev/badge/github.com/wejick/gchain.svg)](https://pkg.go.dev/github.com/wejick/gchain)
+![Build workflow](https://github.com/wejick/gchain/actions/workflows/go.yml/badge.svg)
+[![Integration test](https://github.com/wejick/gchain/actions/workflows/integration.yml/badge.svg)](https://github.com/wejick/gchain/actions/workflows/integration.yml)
 
 
 # 🤔 What is this?
-Inspired by [langchain](https://github.com/hwchase17/langchain) to provide composability when building Large Language Model Application. GoChain mission is to bring langchain concept to Go in idiomatic way.
+Inspired by [langchain](https://github.com/hwchase17/langchain) to provide composability when building Large Language Model Application. GChain mission is to bring langchain concept to Go in idiomatic way.
 
 This Library will help on many usecases, such as :
 
@@ -20,11 +20,11 @@ This Library will help on many usecases, such as :
 ## Install and Importing
 
 ```bash
-$ go get github.com/wejick/gochain
+$ go get github.com/wejick/gchain
 ```
 
 ```golang
-import "github.com/wejick/gochain
+import "github.com/wejick/gchain
 ```
 
 
@@ -44,4 +44,4 @@ As our documentation is not yet complete, please refer to examples and integrati
 
 ## Notice
 1. Don't use it if you have better option
-1. GoChain priority is golang idiomatic. So eventhough it happily use many langchain concept, don't expect exactly the same behavior as this is not reimplementation.
+1. GChain priority is golang idiomatic. So eventhough it happily use many langchain concept, don't expect exactly the same behavior as this is not reimplementation.

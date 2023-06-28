@@ -5,10 +5,10 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/wejick/gochain/callback"
-	"github.com/wejick/gochain/chain/llm_chain"
-	"github.com/wejick/gochain/model"
-	"github.com/wejick/gochain/prompt"
+	"github.com/wejick/gchain/callback"
+	"github.com/wejick/gchain/chain/llm_chain"
+	"github.com/wejick/gchain/model"
+	"github.com/wejick/gchain/prompt"
 )
 
 var emptyPrompt, _ = prompt.NewPromptTemplate("empty", "")

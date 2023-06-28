@@ -8,10 +8,10 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/wejick/gochain/callback"
-	"github.com/wejick/gochain/chain/conversation"
-	"github.com/wejick/gochain/model"
-	_openai "github.com/wejick/gochain/model/openAI"
+	"github.com/wejick/gchain/callback"
+	"github.com/wejick/gchain/chain/conversation"
+	"github.com/wejick/gchain/model"
+	_openai "github.com/wejick/gchain/model/openAI"
 
 	"github.com/gorilla/websocket"
 )

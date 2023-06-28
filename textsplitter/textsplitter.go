@@ -12,7 +12,7 @@ The maxChunkSize is according to tiktoken definition of token.
 */
 package textsplitter
 
-import "github.com/wejick/gochain/document"
+import "github.com/wejick/gchain/document"
 
 //go:generate moq -out textsplitter_moq.go . TextSplitter
 

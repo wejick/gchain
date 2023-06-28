@@ -10,16 +10,16 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/wejick/gochain/callback"
-	"github.com/wejick/gochain/chain/conversation"
-	"github.com/wejick/gochain/chain/conversational_retrieval"
-	"github.com/wejick/gochain/chain/llm_chain"
-	"github.com/wejick/gochain/chain/summarization"
-	wikipedia "github.com/wejick/gochain/datastore/wikipedia_retriever"
-	"github.com/wejick/gochain/model"
-	_openai "github.com/wejick/gochain/model/openAI"
-	"github.com/wejick/gochain/prompt"
-	"github.com/wejick/gochain/textsplitter"
+	"github.com/wejick/gchain/callback"
+	"github.com/wejick/gchain/chain/conversation"
+	"github.com/wejick/gchain/chain/conversational_retrieval"
+	"github.com/wejick/gchain/chain/llm_chain"
+	"github.com/wejick/gchain/chain/summarization"
+	wikipedia "github.com/wejick/gchain/datastore/wikipedia_retriever"
+	"github.com/wejick/gchain/model"
+	_openai "github.com/wejick/gchain/model/openAI"
+	"github.com/wejick/gchain/prompt"
+	"github.com/wejick/gchain/textsplitter"
 )
 
 var llmModel model.LLMModel

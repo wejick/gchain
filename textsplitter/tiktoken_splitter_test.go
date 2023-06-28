@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/wejick/gochain/document"
+	"github.com/wejick/gchain/document"
 )
 
 func TestTikTokenSplitter_SplitText(t *testing.T) {

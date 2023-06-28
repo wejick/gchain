@@ -3,7 +3,7 @@ package textsplitter
 import (
 	"strings"
 
-	"github.com/wejick/gochain/document"
+	"github.com/wejick/gchain/document"
 )
 
 type WordSplitter struct {

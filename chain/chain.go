@@ -3,7 +3,7 @@ package chain
 import (
 	"context"
 
-	"github.com/wejick/gochain/model"
+	"github.com/wejick/gchain/model"
 )
 
 //go:generate mockery --name BaseChain

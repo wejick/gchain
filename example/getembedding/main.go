@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/sashabaranov/go-openai"
-	_openai "github.com/wejick/gochain/model/openAI"
+	_openai "github.com/wejick/gchain/model/openAI"
 )
 
 type vector struct {

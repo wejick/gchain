@@ -4,7 +4,7 @@
 package textsplitter
 
 import (
-	"github.com/wejick/gochain/document"
+	"github.com/wejick/gchain/document"
 	"sync"
 )
 

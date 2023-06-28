@@ -11,9 +11,9 @@ import (
 
 	"github.com/sashabaranov/go-openai"
 	"github.com/stretchr/testify/assert"
-	"github.com/wejick/gochain/callback"
-	"github.com/wejick/gochain/model"
-	_openai "github.com/wejick/gochain/model/openAI"
+	"github.com/wejick/gchain/callback"
+	"github.com/wejick/gchain/model"
+	_openai "github.com/wejick/gchain/model/openAI"
 )
 
 var llmModel model.LLMModel

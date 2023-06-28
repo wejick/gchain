@@ -1,5 +1,5 @@
 /*
-Datastore package define several interfaces for gochain to interact with data structure.
+Datastore package define several interfaces for gchain to interact with data structure.
 
  1. Datastore
     It define a general interface to any database system available and use it to store and search for data.

@@ -15,12 +15,12 @@ import (
 	"errors"
 	"log"
 
-	"github.com/wejick/gochain/callback"
-	basechain "github.com/wejick/gochain/chain"
-	"github.com/wejick/gochain/datastore"
-	"github.com/wejick/gochain/model"
-	"github.com/wejick/gochain/prompt"
-	"github.com/wejick/gochain/textsplitter"
+	"github.com/wejick/gchain/callback"
+	basechain "github.com/wejick/gchain/chain"
+	"github.com/wejick/gchain/datastore"
+	"github.com/wejick/gchain/model"
+	"github.com/wejick/gchain/prompt"
+	"github.com/wejick/gchain/textsplitter"
 )
 
 type answerOrLookupOutput struct {

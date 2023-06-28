@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/sashabaranov/go-openai"
-	model "github.com/wejick/gochain/model"
+	model "github.com/wejick/gchain/model"
 )
 
 func TestConvertMessageToOai(t *testing.T) {

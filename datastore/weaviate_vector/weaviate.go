@@ -8,9 +8,9 @@ import (
 	"github.com/weaviate/weaviate-go-client/v4/weaviate/auth"
 	"github.com/weaviate/weaviate-go-client/v4/weaviate/graphql"
 	"github.com/weaviate/weaviate/entities/models"
-	"github.com/wejick/gochain/datastore"
-	"github.com/wejick/gochain/document"
-	"github.com/wejick/gochain/model"
+	"github.com/wejick/gchain/datastore"
+	"github.com/wejick/gchain/document"
+	"github.com/wejick/gchain/model"
 )
 
 var _ datastore.VectorStore = &WeaviateVectorStore{}
@@ -117,7 +117,7 @@ func (W *WeaviateVectorStore) AddDocuments(ctx context.Context, className string
 	return
 }
 
-// objectsToDocument convert objects of weaviate query result to gochain document
+// objectsToDocument convert objects of weaviate query result to gchain document
 func objectsToDocument(className string, getObjects models.JSONObject, additionalField []string) (docs []document.Document, err error) {
 	/* Response from weaviate
 		{

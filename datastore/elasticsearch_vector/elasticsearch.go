@@ -9,9 +9,9 @@ import (
 	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/elastic/go-elasticsearch/v8/typedapi/core/search"
 	"github.com/elastic/go-elasticsearch/v8/typedapi/types"
-	"github.com/wejick/gochain/datastore"
-	"github.com/wejick/gochain/document"
-	"github.com/wejick/gochain/model"
+	"github.com/wejick/gchain/datastore"
+	"github.com/wejick/gchain/document"
+	"github.com/wejick/gchain/model"
 )
 
 var _ datastore.VectorStore = &ElasticsearchVectorStore{}

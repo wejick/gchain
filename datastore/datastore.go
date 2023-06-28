@@ -3,7 +3,7 @@ package datastore
 import (
 	"context"
 
-	"github.com/wejick/gochain/document"
+	"github.com/wejick/gchain/document"
 )
 
 // DataStore is the interface for storing and retrieving data

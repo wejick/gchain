@@ -5,8 +5,8 @@ import (
 	"errors"
 
 	gowiki "github.com/trietmn/go-wiki"
-	"github.com/wejick/gochain/datastore"
-	"github.com/wejick/gochain/document"
+	"github.com/wejick/gchain/datastore"
+	"github.com/wejick/gchain/document"
 )
 
 var _ datastore.Retriever = &Wikipedia{}

@@ -9,13 +9,13 @@ import (
 	"os"
 
 	"github.com/sashabaranov/go-openai"
-	"github.com/wejick/gochain/callback"
-	"github.com/wejick/gochain/chain/conversational_retrieval"
-	weaviateVS "github.com/wejick/gochain/datastore/weaviate_vector"
-	"github.com/wejick/gochain/document"
-	"github.com/wejick/gochain/model"
-	_openai "github.com/wejick/gochain/model/openAI"
-	"github.com/wejick/gochain/textsplitter"
+	"github.com/wejick/gchain/callback"
+	"github.com/wejick/gchain/chain/conversational_retrieval"
+	weaviateVS "github.com/wejick/gchain/datastore/weaviate_vector"
+	"github.com/wejick/gchain/document"
+	"github.com/wejick/gchain/model"
+	_openai "github.com/wejick/gchain/model/openAI"
+	"github.com/wejick/gchain/textsplitter"
 )
 
 var OAIauthToken = os.Getenv("OPENAI_API_KEY")

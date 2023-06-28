@@ -1,1 +1,1 @@
-package gochain
+package gchain
