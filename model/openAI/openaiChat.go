@@ -80,11 +80,20 @@ func (O *OpenAIChatModel) Chat(ctx context.Context, messages []model.ChatMessage
 		return
 	}
 
+	RequestFunctions := []goopenai.FunctionDefinition{}
+	for _, f := range opts.Functions {
+		RequestFunctions = append(RequestFunctions, goopenai.FunctionDefinition{
+			Name:        f.Name,
+			Description: f.Description,
+			Parameters:  f.Parameters,
+		})
+	}
 	request := goopenai.ChatCompletionRequest{
 		Model:       goopenai.GPT3Dot5Turbo,
 		MaxTokens:   opts.MaxToken,
 		Temperature: opts.Temperature,
 		Messages:    convertMessagesToOai(messages),
+		Functions:   RequestFunctions,
 		Stream:      false,
 	}
 
@@ -92,10 +101,7 @@ func (O *OpenAIChatModel) Chat(ctx context.Context, messages []model.ChatMessage
 	if err != nil {
 		return
 	} else if len(response.Choices) > 0 {
-		output = model.ChatMessage{
-			Role:    response.Choices[0].Message.Role,
-			Content: response.Choices[0].Message.Content,
-		}
+		output = convertOaiMessageToChat(response.Choices[0].Message)
 	}
 
 	// Trigger end callback
@@ -168,6 +174,7 @@ func (O *OpenAIChatModel) chatStreaming(ctx context.Context, messages []model.Ch
 func convertMessageToOai(chatMessage model.ChatMessage) goopenai.ChatCompletionMessage {
 	return goopenai.ChatCompletionMessage{
 		Role:    chatMessage.Role,
+		Name:    chatMessage.FunctionName,
 		Content: chatMessage.Content,
 	}
 }
@@ -178,4 +185,18 @@ func convertMessagesToOai(chatMessages []model.ChatMessage) []goopenai.ChatCompl
 		completionMessages = append(completionMessages, convertMessageToOai(message))
 	}
 	return completionMessages
+}
+
+func convertOaiMessageToChat(chatMessage goopenai.ChatCompletionMessage) (message model.ChatMessage) {
+	message = model.ChatMessage{
+		Role:    chatMessage.Role,
+		Content: chatMessage.Content,
+	}
+
+	if chatMessage.FunctionCall != nil {
+		message.FunctionName = chatMessage.FunctionCall.Name
+		message.ParameterJson = chatMessage.FunctionCall.Arguments
+	}
+
+	return
 }

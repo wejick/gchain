@@ -9,9 +9,23 @@ type LLMModel interface {
 	Call(ctx context.Context, prompt string, options ...func(*Option)) (string, error)
 }
 
+//go:generate moq -out model_chat_moq.go . ChatModel
+type ChatModel interface {
+	LLMModel
+	Chat(ctx context.Context, messages []ChatMessage, options ...func(*Option)) (ChatMessage, error)
+}
+
+//go:generate moq -out model_embedding_moq.go . EmbeddingModel
+
+type EmbeddingModel interface {
+	EmbedQuery(input string) ([]float32, error)
+	EmbedDocuments(documents []string) ([][]float32, error)
+}
+
 type Option struct {
 	Temperature      float32
 	StreamingChannel chan ChatMessage // non chat model can also use this
+	Functions        []FunctionDefinition
 	MaxToken         int
 	IsStreaming      bool
 	Verbose          bool
@@ -35,34 +49,14 @@ func WithStreamingChannel(streamingChannel chan ChatMessage) func(*Option) {
 	}
 }
 
-func WithIsStreaming(isStreaming bool) func(*Option) {
+func WithStreaming(isStreaming bool) func(*Option) {
 	return func(o *Option) {
 		o.IsStreaming = isStreaming
 	}
 }
 
-//go:generate moq -out model_chat_moq.go . ChatModel
-type ChatModel interface {
-	LLMModel
-	Chat(ctx context.Context, messages []ChatMessage, options ...func(*Option)) (ChatMessage, error)
-}
-
-type ChatMessage struct {
-	Role    string
-	Content string
-}
-
-func (C *ChatMessage) String() string {
-	return C.Role + ": " + C.Content
-}
-
-const (
-	ChatMessageRoleSystem    = "system"
-	ChatMessageRoleUser      = "user"
-	ChatMessageRoleAssistant = "assistant"
-)
-
-type EmbeddingModel interface {
-	EmbedQuery(input string) ([]float32, error)
-	EmbedDocuments(documents []string) ([][]float32, error)
+func WithFunctions(function []FunctionDefinition) func(*Option) {
+	return func(o *Option) {
+		o.Functions = function
+	}
 }

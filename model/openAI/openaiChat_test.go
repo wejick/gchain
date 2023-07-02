@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/sashabaranov/go-openai"
+	goopenai "github.com/sashabaranov/go-openai"
 	model "github.com/wejick/gchain/model"
 )
 
@@ -34,5 +35,25 @@ func TestConvertMessagesToOai(t *testing.T) {
 
 	if !reflect.DeepEqual(result, expected) {
 		t.Errorf("Conversion was incorrect, got: %v, want: %v.", result, expected)
+	}
+}
+
+func Test_convertOaiMessageToChat(t *testing.T) {
+	type args struct {
+		chatMessage goopenai.ChatCompletionMessage
+	}
+	tests := []struct {
+		name string
+		args args
+		want model.ChatMessage
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := convertOaiMessageToChat(tt.args.chatMessage); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("convertOaiMessageToChat() = %v, want %v", got, tt.want)
+			}
+		})
 	}
 }

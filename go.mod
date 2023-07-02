@@ -5,7 +5,7 @@ go 1.20
 require (
 	github.com/elastic/go-elasticsearch/v8 v8.8.1
 	github.com/pkoukk/tiktoken-go v0.1.2
-	github.com/sashabaranov/go-openai v1.10.1
+	github.com/sashabaranov/go-openai v1.12.0
 	github.com/stretchr/testify v1.8.3
 	github.com/trietmn/go-wiki v1.0.1
 	github.com/weaviate/weaviate v1.19.7
