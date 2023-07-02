@@ -37,7 +37,7 @@ func main() {
 		var output string
 		go func() {
 			var err error
-			output, err = convoChain.SimpleRun(context.Background(), chat, model.WithIsStreaming(true), model.WithStreamingChannel(streamingChannel))
+			output, err = convoChain.SimpleRun(context.Background(), chat, model.WithStreaming(true), model.WithStreamingChannel(streamingChannel))
 			if err != nil {
 				fmt.Println("error " + err.Error())
 				return
