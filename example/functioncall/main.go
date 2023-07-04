@@ -9,7 +9,7 @@ import (
 	"github.com/wejick/gchain/callback"
 	"github.com/wejick/gchain/model"
 	_openai "github.com/wejick/gchain/model/openAI"
-	"github.com/wejick/gchain/tools/greetings"
+	"github.com/wejick/gchain/tools/greeting"
 )
 
 func main() {
@@ -18,7 +18,7 @@ func main() {
 	chatModel = _openai.NewOpenAIChatModel(authToken, "", _openai.GPT3Dot5Turbo0301, callback.NewManager(), false)
 	memory := []model.ChatMessage{}
 
-	greeter := greetings.NewGreetingsTool()
+	greeter := greeting.NewGreetingTool()
 
 	// prepare a function register
 	functionList := map[string]func(string) string{

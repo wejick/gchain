@@ -1,4 +1,4 @@
-package greetings
+package greeting
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 )
 
 func TestGreetingsTool(t *testing.T) {
-	greetingTool := NewGreetingsTool()
+	greetingTool := NewGreetingTool()
 	assert.NotNil(t, greetingTool)
 
 	assert.NotNil(t, greetingTool.GetFunctionDefinition())
