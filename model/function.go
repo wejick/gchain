@@ -1,5 +1,7 @@
 package model
 
+import "strings"
+
 type DataType string
 
 const (
@@ -22,4 +24,22 @@ type FunctionDefinition struct {
 	Type        string             `json:"type,omitempty"`
 	Description string             `json:"description,omitempty"`
 	Parameters  FunctionJsonSchema `json:"parameters,omitempty"`
+}
+
+func (F FunctionJsonSchema) String() string {
+	var paramString string
+	if len(F.Required) > 0 {
+		paramString += "required = " + strings.Join(F.Required, ",")
+	}
+	paramString += "\nparameter|description|type|enum"
+	for key, value := range F.Properties {
+		var enumString string
+		if len(value.Enum) > 0 {
+			enumString = strings.Join(value.Enum, ",")
+		} else {
+			enumString = "no"
+		}
+		paramString += "\n" + key + "|" + value.Description + "|" + string(value.Type) + "|" + enumString
+	}
+	return paramString
 }
