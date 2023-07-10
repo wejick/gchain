@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 
 	"github.com/wejick/gchain/model"
+	"github.com/wejick/gchain/tools"
 )
 
 type GreetingTool struct {
@@ -61,9 +62,7 @@ func (G *GreetingTool) GetFunctionDefinition() model.FunctionDefinition {
 
 // GetDefinitionString tool definition in string format
 func (G *GreetingTool) GetDefinitionString() string {
-	description := `name = ` + G.functionDefinition.Name + `
-description = ` + G.functionDefinition.Description + `
-` + G.functionDefinition.Parameters.String()
+	description := tools.GetDefinitionString(G)
 
 	return description
 }
