@@ -174,7 +174,7 @@ func (O *OpenAIChatModel) chatStreaming(ctx context.Context, messages []model.Ch
 func convertMessageToOai(chatMessage model.ChatMessage) goopenai.ChatCompletionMessage {
 	return goopenai.ChatCompletionMessage{
 		Role:    chatMessage.Role,
-		Name:    chatMessage.FunctionName,
+		Name:    chatMessage.Name,
 		Content: chatMessage.Content,
 	}
 }
@@ -194,7 +194,7 @@ func convertOaiMessageToChat(chatMessage goopenai.ChatCompletionMessage) (messag
 	}
 
 	if chatMessage.FunctionCall != nil {
-		message.FunctionName = chatMessage.FunctionCall.Name
+		message.Name = chatMessage.FunctionCall.Name
 		message.ParameterJson = chatMessage.FunctionCall.Arguments
 	}
 

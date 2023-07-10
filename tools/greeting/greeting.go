@@ -32,10 +32,8 @@ func NewGreetingTool() *GreetingTool {
 }
 
 // Run give greeting to user, this is to demonstrate the simples form of tool
-// expect input inside prompt["input"] and return output inside output["output"]
-// the input is a non nested json that will be marshalled into map[string]string and will be passed as parameter to the real greeting function
 func (G *GreetingTool) Run(ctx context.Context, prompt map[string]string, options ...func(*model.Option)) (output map[string]string, err error) {
-	stringOutput, err := G.SimpleRun(ctx, prompt["input"], options...)
+	stringOutput, err := G.SimpleRun(ctx, prompt["user_name"], options...)
 	output = map[string]string{"output": stringOutput}
 	return
 }

@@ -25,7 +25,7 @@ func TestConvertMessagesToOai(t *testing.T) {
 		{Role: "system", Content: "Welcome to our system"},
 		{Role: "AI", Content: "Heiho, I am AI"},
 		{Role: "user", Content: "Hello, I need assistance"},
-		{Role: "AI", FunctionName: "assist", Content: "I will assist you"},
+		{Role: "AI", Name: "assist", Content: "I will assist you"},
 	}
 
 	expected := []openai.ChatCompletionMessage{
@@ -94,7 +94,7 @@ func Test_convertOaiMessageToChat(t *testing.T) {
 			want: model.ChatMessage{
 				Role:          model.ChatMessageRoleAssistant,
 				Content:       "",
-				FunctionName:  "test",
+				Name:          "test",
 				ParameterJson: "argument here",
 			},
 		},

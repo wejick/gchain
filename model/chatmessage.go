@@ -3,7 +3,7 @@ package model
 type ChatMessage struct {
 	Role          string
 	Content       string
-	FunctionName  string `json:"name"`
+	Name          string `json:"name"`
 	ParameterJson string // json string of function parameter
 }
 
