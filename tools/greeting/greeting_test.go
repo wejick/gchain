@@ -13,20 +13,25 @@ func TestGreetingsTool(t *testing.T) {
 
 	assert.NotNil(t, greetingTool.GetFunctionDefinition())
 
-	// test run
+	// test simple run
 	output, err := greetingTool.SimpleRun(context.Background(), `{"user_name":"John"}`)
 	assert.Nil(t, err)
 	assert.Equal(t, "Hello John welcome to the paradise of the world", output)
 
-	// test run with invalid input
-	output, err = greetingTool.SimpleRun(context.Background(), `{"user_name":123}`)
+	// test simple run with invalid input
+	output, err = greetingTool.SimpleRun(context.Background(), `123`)
 	assert.NotNil(t, err)
 	assert.Equal(t, "", output)
 
 	// test run
-	outputRun, err := greetingTool.Run(context.Background(), map[string]string{"input": `{"user_name":"John"}`})
+	outputRun, err := greetingTool.Run(context.Background(), map[string]string{"user_name": "John"})
 	assert.Nil(t, err)
 	assert.Equal(t, map[string]string{"output": "Hello John welcome to the paradise of the world"}, outputRun)
+
+	// test run with invalid input
+	outputRun, err = greetingTool.Run(context.Background(), nil)
+	assert.NotNil(t, err)
+	assert.Nil(t, outputRun)
 
 	// get description
 	description := `name = ` + greetingTool.functionDefinition.Name + `

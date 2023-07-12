@@ -42,15 +42,15 @@ func main() {
 	fmt.Println(response)
 
 	// append the first response to memory
-	memory = append(memory, model.ChatMessage{Role: model.ChatMessageRoleAssistant, Content: response.Content, FunctionName: response.FunctionName})
+	memory = append(memory, model.ChatMessage{Role: model.ChatMessageRoleAssistant, Content: response.Content, Name: response.Name})
 
 	// check if function call needed
-	if response.FunctionName != "" {
+	if response.Name != "" {
 		// call the function and get the result
-		functionCallReturn := functionList[response.FunctionName](response.ParameterJson)
+		functionCallReturn := functionList[response.Name](response.ParameterJson)
 
 		// The second call to the model, to give the function result to the model
-		memory = append(memory, model.ChatMessage{Role: model.ChatMessageRoleFunction, FunctionName: response.FunctionName, Content: functionCallReturn})
+		memory = append(memory, model.ChatMessage{Role: model.ChatMessageRoleFunction, Name: response.Name, Content: functionCallReturn})
 		response, err = chatModel.Chat(context.Background(), memory, model.WithFunctions([]model.FunctionDefinition{functionDef}))
 		if err != nil {
 			log.Println(err)
