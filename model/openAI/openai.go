@@ -15,12 +15,12 @@ type OpenAIModel struct {
 }
 
 // NewOpenAIModel return new openAI Model instance
-func NewOpenAIModel(authToken string, orgID string, modelName string, callbackManager *callback.Manager, verbose bool) (llm *OpenAIModel) {
+func NewOpenAIModel(authToken string, orgID string, baseURL string, modelName string, callbackManager *callback.Manager, verbose bool) (llm *OpenAIModel) {
 	var client *goopenai.Client
-	if orgID != "" {
+	if baseURL == "" {
 		client = goopenai.NewClient(authToken)
 	} else {
-		config := goopenai.DefaultConfig(authToken)
+		config := goopenai.DefaultAzureConfig(authToken, baseURL)
 		config.OrgID = orgID
 		client = goopenai.NewClientWithConfig(config)
 	}
