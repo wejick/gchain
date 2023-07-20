@@ -13,6 +13,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 
 	"github.com/wejick/gchain/callback"
@@ -87,6 +88,11 @@ func (C *ConversationalRetrievalChain) Run(ctx context.Context, chat map[string]
 	output = make(map[string]string)
 	var answerOrLookup answerOrLookupOutput
 
+	opts := model.Option{}
+	for _, opt := range options {
+		opt(&opts)
+	}
+
 	// trigger CallbackChainStart
 	C.callbackManager.TriggerEvent(ctx, basechain.CallbackChainStart, callback.CallbackData{
 		EventName:    basechain.CallbackChainStart,
@@ -119,15 +125,24 @@ func (C *ConversationalRetrievalChain) Run(ctx context.Context, chat map[string]
 
 		return
 	}
+	datastoreOptions := []func(*datastore.Option){}
+	if len(opts.AdditionalMetadataFields) > 0 {
+		datastoreOptions = append(datastoreOptions, datastore.WithAdditionalFields(opts.AdditionalMetadataFields))
+	}
 
 	// when we need to look up
-	retrieverOutput, err := C.retriever.Search(ctx, C.indexName, answerOrLookup.Query)
+	retrieverOutput, err := C.retriever.Search(ctx, C.indexName, answerOrLookup.Query, datastoreOptions...)
 	if err != nil {
 		return
 	}
 	var retrieverResult string
 	for _, resp := range retrieverOutput {
 		retrieverResult += resp.Text
+		if len(opts.AdditionalMetadataFields) > 0 {
+			for _, field := range opts.AdditionalMetadataFields {
+				output[field] = output[field] + ", " + fmt.Sprintf("%+v", resp.Metadata[field])
+			}
+		}
 	}
 
 	answer, err := C.answerFromDoc(ctx, answerOrLookup, retrieverResult, options...)

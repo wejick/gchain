@@ -23,12 +23,13 @@ type EmbeddingModel interface {
 }
 
 type Option struct {
-	Temperature      float32
-	StreamingChannel chan ChatMessage // non chat model can also use this
-	Functions        []FunctionDefinition
-	MaxToken         int
-	IsStreaming      bool
-	Verbose          bool
+	Temperature              float32
+	StreamingChannel         chan ChatMessage // non chat model can also use this
+	Functions                []FunctionDefinition
+	AdditionalMetadataFields []string
+	MaxToken                 int
+	IsStreaming              bool
+	Verbose                  bool
 }
 
 func WithTemperature(temp float32) func(*Option) {
@@ -46,6 +47,12 @@ func WithMaxToken(maxToken int) func(*Option) {
 func WithStreamingChannel(streamingChannel chan ChatMessage) func(*Option) {
 	return func(o *Option) {
 		o.StreamingChannel = streamingChannel
+	}
+}
+
+func WithReturnMetadataFields(fields []string) func(*Option) {
+	return func(o *Option) {
+		o.AdditionalMetadataFields = fields
 	}
 }
 
