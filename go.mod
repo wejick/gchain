@@ -8,8 +8,8 @@ require (
 	github.com/sashabaranov/go-openai v1.12.0
 	github.com/stretchr/testify v1.8.4
 	github.com/trietmn/go-wiki v1.0.1
-	github.com/weaviate/weaviate v1.19.7
-	github.com/weaviate/weaviate-go-client/v4 v4.8.1
+	github.com/weaviate/weaviate v1.19.13-0.20230706120536-85b5f0f4fa43
+	github.com/weaviate/weaviate-go-client/v4 v4.9.0
 )
 
 require (
@@ -48,7 +48,7 @@ require (
 	github.com/stretchr/objx v0.5.0 // indirect
 	go.mongodb.org/mongo-driver v1.11.3 // indirect
 	golang.org/x/net v0.7.0 // indirect
-	golang.org/x/oauth2 v0.0.0-20220822191816-0ebed06d0094 // indirect
+	golang.org/x/oauth2 v0.4.0 // indirect
 	golang.org/x/text v0.7.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.30.0 // indirect
