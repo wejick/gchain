@@ -44,7 +44,7 @@ func Init() (err error) {
 		log.Println(err)
 		return
 	}
-	embeddingModel = _openai.NewOpenAIEmbedModel(OAIauthToken, "", openai.AdaEmbeddingV2)
+	embeddingModel = _openai.NewOpenAIEmbedModel(OAIauthToken, "", "", openai.AdaEmbeddingV2)
 	chatModel = _openai.NewOpenAIChatModel(OAIauthToken, "", "", _openai.GPT3Dot5Turbo0301, callback.NewManager(), false)
 
 	wvClient, err = weaviateVS.NewWeaviateVectorStore(wvhost, wvscheme, wvApiKey, embeddingModel, nil)
