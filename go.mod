@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/elastic/go-elasticsearch/v8 v8.8.1
-	github.com/pkoukk/tiktoken-go v0.1.2
+	github.com/pkoukk/tiktoken-go v0.1.5
 	github.com/sashabaranov/go-openai v1.12.0
 	github.com/stretchr/testify v1.8.3
 	github.com/trietmn/go-wiki v1.0.1
@@ -26,7 +26,7 @@ require (
 	github.com/anaskhan96/soup v1.2.5 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/dlclark/regexp2 v1.8.1 // indirect
+	github.com/dlclark/regexp2 v1.10.0 // indirect
 	github.com/go-openapi/analysis v0.21.2 // indirect
 	github.com/go-openapi/errors v0.20.3 // indirect
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
