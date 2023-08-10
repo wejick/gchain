@@ -31,6 +31,25 @@ func NewOpenAIEmbedModel(authToken string, orgID string, modelName goopenai.Embe
 	return
 }
 
+// NewOpenAIAzureEmbedModel return new openAI azure Model instance
+func NewOpenAIAzureEmbedModel(authToken string, orgID string, baseURL string, modelName goopenai.EmbeddingModel) (model *OpenAIEmbedModel) {
+	var client *goopenai.Client
+	if orgID == "" {
+		client = goopenai.NewClient(authToken)
+	} else {
+		config := goopenai.DefaultAzureConfig(authToken, baseURL)
+		config.OrgID = orgID
+		client = goopenai.NewClientWithConfig(config)
+	}
+
+	model = &OpenAIEmbedModel{
+		c:     client,
+		model: modelName,
+	}
+
+	return
+}
+
 // EmbedQuery produce embedding for a string of query
 func (m *OpenAIEmbedModel) EmbedQuery(input string) (embedding []float32, err error) {
 	embeddings, err := m.EmbedDocuments([]string{input})
