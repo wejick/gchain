@@ -61,7 +61,7 @@ func TestOpenAIChatCall(t *testing.T) {
 }
 
 func TestOpenAIEmbedding(t *testing.T) {
-	embeddingModel := _openai.NewOpenAIEmbedModel(authToken, "", openai.AdaEmbeddingV2)
+	embeddingModel := _openai.NewOpenAIEmbedModel(authToken, "", "", openai.AdaEmbeddingV2)
 
 	embedding, err := embeddingModel.EmbedQuery("answer in short and direct")
 	if err != nil {
