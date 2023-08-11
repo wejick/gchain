@@ -16,6 +16,7 @@ import (
 	"github.com/wejick/gchain/chain/llm_chain"
 	"github.com/wejick/gchain/chain/summarization"
 	wikipedia "github.com/wejick/gchain/datastore/wikipedia_retriever"
+	"github.com/wejick/gchain/eval"
 	"github.com/wejick/gchain/model"
 	_openai "github.com/wejick/gchain/model/openAI"
 	"github.com/wejick/gchain/prompt"
@@ -57,6 +58,7 @@ func TestLlmChain(t *testing.T) {
 	customOutputMap, err := customPromptChain.Run(context.Background(), map[string]string{"text": "Indonesia Capital is Jakarta\nJakarta is the capital of "})
 	assert.NoError(t, err, "error Run")
 	assert.Contains(t, customOutputMap["output"], "Indonesia", "unexpected result")
+
 }
 
 func TestStuffSummarizationChain(t *testing.T) {
@@ -116,6 +118,13 @@ func TestStuffSummarizationChainChat(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.NotEmpty(t, output)
+
+	IsMeaningfull := eval.NewLLMEval(llmModel, "Is the input meaningful?")
+	evalOutput, err := IsMeaningfull.Evaluate(output)
+	if !evalOutput {
+		t.Error(err)
+	}
+
 }
 
 func TestConversationChainChat(t *testing.T) {
