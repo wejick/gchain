@@ -8,7 +8,7 @@ require (
 	github.com/sashabaranov/go-openai v1.12.0
 	github.com/stretchr/testify v1.8.4
 	github.com/trietmn/go-wiki v1.0.1
-	github.com/weaviate/weaviate v1.19.7
+	github.com/weaviate/weaviate v1.21.1
 	github.com/weaviate/weaviate-go-client/v4 v4.8.1
 )
 
@@ -17,7 +17,7 @@ require (
 	github.com/k0kubun/colorstring v0.0.0-20150214042306-9440f1994b88 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.16 // indirect
-	golang.org/x/sys v0.6.0 // indirect
+	golang.org/x/sys v0.8.0 // indirect
 )
 
 require (
@@ -47,9 +47,9 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/stretchr/objx v0.5.0 // indirect
 	go.mongodb.org/mongo-driver v1.11.3 // indirect
-	golang.org/x/net v0.7.0 // indirect
-	golang.org/x/oauth2 v0.0.0-20220822191816-0ebed06d0094 // indirect
-	golang.org/x/text v0.7.0 // indirect
+	golang.org/x/net v0.10.0 // indirect
+	golang.org/x/oauth2 v0.8.0 // indirect
+	golang.org/x/text v0.9.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.30.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
