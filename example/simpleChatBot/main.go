@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/wejick/gchain/callback"
+	"github.com/wejick/gchain/callback/profiler"
 	"github.com/wejick/gchain/chain/conversation"
 	"github.com/wejick/gchain/model"
 	_openai "github.com/wejick/gchain/model/openAI"
@@ -17,10 +18,16 @@ func main() {
 	fmt.Println("Type .quit to exit")
 
 	var authToken = os.Getenv("OPENAI_API_KEY")
-	chatModel := _openai.NewOpenAIChatModel(authToken, "", "", _openai.GPT3Dot5Turbo0301, callback.NewManager(), false)
+
+	callbackMan := callback.NewManager()
+	profiler := profiler.NewProfiler()
+
+	callbackMan.RegisterCallback(model.CallbackModelEnd, profiler.Callback)
+
+	chatModel := _openai.NewOpenAIChatModel(authToken, "", "", _openai.GPT3Dot5Turbo0301, callbackMan, false)
 	memory := []model.ChatMessage{}
 	streamingChannel := make(chan model.ChatMessage, 100)
-	convoChain := conversation.NewConversationChain(chatModel, memory, callback.NewManager(), "You're helpful chatbot that answer human question very concisely", false)
+	convoChain := conversation.NewConversationChain(chatModel, memory, callbackMan, "You're helpful chatbot that answer human question very concisely", false)
 	convoChain.AppendToMemory(model.ChatMessage{Role: model.ChatMessageRoleAssistant, Content: "Hi, My name is GioAI"})
 
 	for {

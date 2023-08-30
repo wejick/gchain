@@ -93,8 +93,10 @@ func (C *ConversationalRetrievalChain) Run(ctx context.Context, chat map[string]
 		opt(&opts)
 	}
 
+	newContext := callback.NewContext(ctx)
+
 	// trigger CallbackChainStart
-	C.callbackManager.TriggerEvent(ctx, basechain.CallbackChainStart, callback.CallbackData{
+	C.callbackManager.TriggerEvent(newContext, basechain.CallbackChainStart, callback.CallbackData{
 		EventName:    basechain.CallbackChainStart,
 		FunctionName: "ConversationalRetrievalChain.Run",
 		Input:        chat,
@@ -102,14 +104,14 @@ func (C *ConversationalRetrievalChain) Run(ctx context.Context, chat map[string]
 
 	inputChat := model.ChatMessage{Role: model.ChatMessageRoleUser, Content: chat["input"]}
 
-	answerOrLookup, err = C.answerOrLookup(ctx, chat["input"], options...)
+	answerOrLookup, err = C.answerOrLookup(newContext, chat["input"], options...)
 	if err != nil {
 		return
 	}
 
 	// trigger CallbackChainEnd, using lambda to defer the execution
 	defer func(data callback.CallbackData) {
-		C.callbackManager.TriggerEvent(ctx, basechain.CallbackChainEnd, data)
+		C.callbackManager.TriggerEvent(newContext, basechain.CallbackChainEnd, data)
 	}(callback.CallbackData{
 		EventName:    basechain.CallbackChainEnd,
 		FunctionName: "ConversationalRetrievalChain.Run",
@@ -131,7 +133,7 @@ func (C *ConversationalRetrievalChain) Run(ctx context.Context, chat map[string]
 	}
 
 	// when we need to look up
-	retrieverOutput, err := C.retriever.Search(ctx, C.indexName, answerOrLookup.Query, datastoreOptions...)
+	retrieverOutput, err := C.retriever.Search(newContext, C.indexName, answerOrLookup.Query, datastoreOptions...)
 	if err != nil {
 		return
 	}
@@ -145,7 +147,7 @@ func (C *ConversationalRetrievalChain) Run(ctx context.Context, chat map[string]
 		}
 	}
 
-	answer, err := C.answerFromDoc(ctx, answerOrLookup, retrieverResult, options...)
+	answer, err := C.answerFromDoc(newContext, answerOrLookup, retrieverResult, options...)
 
 	// append answer to memory
 	C.AppendToMemory(inputChat)

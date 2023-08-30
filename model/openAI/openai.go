@@ -45,6 +45,8 @@ func (O *OpenAIModel) Call(ctx context.Context, prompt string, options ...func(*
 		opt(&opts)
 	}
 
+	newContext := callback.NewContext(ctx)
+
 	request := goopenai.CompletionRequest{
 		Model:       O.modelName,
 		Temperature: opts.Temperature,
@@ -53,7 +55,7 @@ func (O *OpenAIModel) Call(ctx context.Context, prompt string, options ...func(*
 	}
 
 	// Trigger start and end callback
-	O.callbackManager.TriggerEvent(ctx, model.CallbackModelStart, callback.CallbackData{
+	O.callbackManager.TriggerEvent(newContext, model.CallbackModelStart, callback.CallbackData{
 		EventName:    model.CallbackModelStart,
 		FunctionName: "OpenAIModel.Call",
 		Input:        map[string]string{"input": prompt},
@@ -67,7 +69,7 @@ func (O *OpenAIModel) Call(ctx context.Context, prompt string, options ...func(*
 		output = response.Choices[0].Text
 	}
 
-	O.callbackManager.TriggerEvent(ctx, model.CallbackModelEnd, callback.CallbackData{
+	O.callbackManager.TriggerEvent(newContext, model.CallbackModelEnd, callback.CallbackData{
 		EventName:    model.CallbackModelEnd,
 		FunctionName: "OpenAIModel.Call",
 		Input:        map[string]string{"input": prompt},

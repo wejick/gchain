@@ -47,8 +47,10 @@ func (C *ConversationChain) Run(ctx context.Context, chat map[string]string, opt
 	}
 	output = make(map[string]string)
 
+	newContext := callback.NewContext(ctx)
+
 	//trigger callback
-	C.callbackManager.TriggerEvent(ctx, basechain.CallbackChainStart, callback.CallbackData{
+	C.callbackManager.TriggerEvent(newContext, basechain.CallbackChainStart, callback.CallbackData{
 		EventName:    basechain.CallbackChainStart,
 		FunctionName: "ConversationChain.Run",
 		Input:        chat,
@@ -56,7 +58,7 @@ func (C *ConversationChain) Run(ctx context.Context, chat map[string]string, opt
 	})
 
 	C.AppendToMemory(model.ChatMessage{Role: model.ChatMessageRoleUser, Content: chat["input"]})
-	message, err := C.chatModel.Chat(ctx, C.memory, options...)
+	message, err := C.chatModel.Chat(newContext, C.memory, options...)
 
 	// add response message to memory
 	C.AppendToMemory(message)
@@ -64,7 +66,7 @@ func (C *ConversationChain) Run(ctx context.Context, chat map[string]string, opt
 	output["output"] = message.Content
 
 	//trigger callback
-	C.callbackManager.TriggerEvent(ctx, basechain.CallbackChainEnd, callback.CallbackData{
+	C.callbackManager.TriggerEvent(newContext, basechain.CallbackChainEnd, callback.CallbackData{
 		EventName:    basechain.CallbackChainEnd,
 		FunctionName: "ConversationChain.Run",
 		Input:        chat,

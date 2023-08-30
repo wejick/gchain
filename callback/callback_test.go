@@ -58,7 +58,7 @@ func TestManager_TriggerEvent(t *testing.T) {
 	// Prepare test data
 	ctx := context.Background()
 	data := CallbackData{
-		RunID:        "123",
+		SessionID:    "123",
 		EventName:    "event1",
 		FunctionName: "test",
 		Input:        map[string]string{"input1": "value1"},

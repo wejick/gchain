@@ -65,9 +65,11 @@ func (O *OpenAIChatModel) Chat(ctx context.Context, messages []model.ChatMessage
 		opt(&opts)
 	}
 
+	newContext := callback.NewContext(ctx)
+
 	// Trigger start callback
 	flattenMessages := model.FlattenChatMessages(messages)
-	O.callbackManager.TriggerEvent(ctx, model.CallbackModelStart, callback.CallbackData{
+	O.callbackManager.TriggerEvent(newContext, model.CallbackModelStart, callback.CallbackData{
 		EventName:    model.CallbackModelStart,
 		FunctionName: "OpenAIChatModel.Chat",
 		Input:        map[string]string{"input": flattenMessages},
@@ -76,7 +78,7 @@ func (O *OpenAIChatModel) Chat(ctx context.Context, messages []model.ChatMessage
 
 	// call chatStreaming if it's streaming chat
 	if opts.IsStreaming && opts.StreamingChannel != nil {
-		output, err = O.chatStreaming(ctx, messages, options...)
+		output, err = O.chatStreaming(newContext, messages, options...)
 		return
 	}
 
@@ -97,7 +99,7 @@ func (O *OpenAIChatModel) Chat(ctx context.Context, messages []model.ChatMessage
 		Stream:      false,
 	}
 
-	response, err := O.c.CreateChatCompletion(ctx, request)
+	response, err := O.c.CreateChatCompletion(newContext, request)
 	if err != nil {
 		return
 	} else if len(response.Choices) > 0 {
@@ -105,7 +107,7 @@ func (O *OpenAIChatModel) Chat(ctx context.Context, messages []model.ChatMessage
 	}
 
 	// Trigger end callback
-	O.callbackManager.TriggerEvent(ctx, model.CallbackModelEnd, callback.CallbackData{
+	O.callbackManager.TriggerEvent(newContext, model.CallbackModelEnd, callback.CallbackData{
 		EventName:    model.CallbackModelEnd,
 		FunctionName: "OpenAIChatModel.Chat",
 		Input:        map[string]string{"input": flattenMessages},
@@ -124,6 +126,8 @@ func (O *OpenAIChatModel) chatStreaming(ctx context.Context, messages []model.Ch
 		opt(&opts)
 	}
 
+	newContext := callback.NewContext(ctx)
+
 	request := goopenai.ChatCompletionRequest{
 		Model:       goopenai.GPT3Dot5Turbo,
 		MaxTokens:   opts.MaxToken,
@@ -133,7 +137,7 @@ func (O *OpenAIChatModel) chatStreaming(ctx context.Context, messages []model.Ch
 	}
 
 	// reset the channel
-	stream, err := O.c.CreateChatCompletionStream(ctx, request)
+	stream, err := O.c.CreateChatCompletionStream(newContext, request)
 	if err != nil {
 		return
 	}
@@ -161,7 +165,7 @@ func (O *OpenAIChatModel) chatStreaming(ctx context.Context, messages []model.Ch
 	}
 
 	// Trigger end callback
-	O.callbackManager.TriggerEvent(ctx, model.CallbackModelEnd, callback.CallbackData{
+	O.callbackManager.TriggerEvent(newContext, model.CallbackModelEnd, callback.CallbackData{
 		EventName:    model.CallbackModelEnd,
 		FunctionName: "OpenAIChatModel.Chat",
 		Input:        map[string]string{"input": model.FlattenChatMessages(messages)},
