@@ -33,6 +33,14 @@ func Test_jsonStruct(t *testing.T) {
 			want:    `{"knn":{"field":"vector","query_vector":[],"k":1,"num_candidates":1},"fields":["dense_vector"]}`,
 			wantErr: false,
 		},
+		{
+			name: "case empty data",
+			args: args{
+				doc: ``,
+			},
+			want: `""`,
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -126,6 +134,15 @@ func Test_hitToDocs(t *testing.T) {
 			wantDocs: nil,
 			wantErr:  true,
 		},
+		{
+			name: "case empty data",
+			args: args{
+				esRespBody: ElasticResponse{},
+				additionalFields: nil,
+			},
+			wantDocs: nil,
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -175,6 +192,14 @@ func Test_dataToESDoc(t *testing.T) {
 					"vector": []float32{0.001},
 				},
 			},
+		},
+		{
+			name: "case empty data",
+			args: args{
+				documents: []document.Document{},
+				vector: [][]float32{},
+			},
+			wantOutput: []elasticDocument{},
 		},
 	}
 	for _, tt := range tests {
