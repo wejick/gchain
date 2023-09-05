@@ -103,7 +103,12 @@ func (O *OpenAIChatModel) Chat(ctx context.Context, messages []model.ChatMessage
 	} else if len(response.Choices) > 0 {
 		output = convertOaiMessageToChat(response.Choices[0].Message)
 	}
-
+	promptUsage := model.PromptUsage{
+		PromptTokens:     response.Usage.PromptTokens,
+		CompletionTokens: response.Usage.CompletionTokens,
+		TotalTokens:      response.Usage.TotalTokens,
+	}
+	output.PromptUsage = promptUsage
 	// Trigger end callback
 	O.callbackManager.TriggerEvent(ctx, model.CallbackModelEnd, callback.CallbackData{
 		EventName:    model.CallbackModelEnd,
