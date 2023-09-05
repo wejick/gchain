@@ -5,10 +5,10 @@ type ChatMessage struct {
 	Content       string
 	Name          string `json:"name"`
 	ParameterJson string // json string of function parameter
-	PromptUsage   Usage  `json:"usage"`
+	PromptUsage   PromptUsage  `json:"usage"`
 }
 
-type Usage struct {
+type PromptUsage struct {
 	PromptTokens     int `json:"prompt_tokens"`
 	CompletionTokens int `json:"completion_tokens"`
 	TotalTokens      int `json:"total_tokens"`
