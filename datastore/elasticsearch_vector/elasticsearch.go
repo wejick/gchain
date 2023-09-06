@@ -3,12 +3,11 @@ package elasticsearchVS
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"strings"
 
 	"github.com/elastic/go-elasticsearch/v8"
-	"github.com/elastic/go-elasticsearch/v8/typedapi/core/search"
-	"github.com/elastic/go-elasticsearch/v8/typedapi/types"
 	"github.com/wejick/gchain/datastore"
 	"github.com/wejick/gchain/document"
 	"github.com/wejick/gchain/model"
@@ -46,8 +45,24 @@ type ESOption struct {
 
 // ElasticsearchVectorStore provide access to elasticsearch
 type ElasticsearchVectorStore struct {
-	esClient       *elasticsearch.TypedClient
+	esClient       *elasticsearch.Client
 	embeddingModel model.EmbeddingModel
+}
+
+type ElasticHit struct {
+	Index   string          `json:"_index,omitempty"`
+	ID      string          `json:"_id,omitempty"`
+	Score   float64         `json:"_score,omitempty"`
+	Source_ json.RawMessage `json:"_source,omitempty"`
+}
+
+type ElasticResponse struct {
+	Took     int  `json:"took,omitempty"`
+	TimedOut bool `json:"timed_out,omitempty"`
+	Hits     struct {
+		MaxScore float64      `json:"max_score,omitempty"`
+		Hits     []ElasticHit `json:"hits,omitempty"`
+	} `json:"hits,omitempty"`
 }
 
 // NewElasticsearchVectorStore return new Elasticsearch instance
@@ -58,14 +73,14 @@ func NewElasticsearchVectorStore(host string, embeddingModel model.EmbeddingMode
 	}
 
 	cfg := elasticsearch.Config{
-		Addresses:    []string{host},
 		Username:     opts.Username,
 		Password:     opts.Password,
+		Addresses:    []string{host},
 		CloudID:      opts.CloudID,
 		APIKey:       opts.APIKey,
 		ServiceToken: opts.ServiceToken,
 	}
-	esClient, err := elasticsearch.NewTypedClient(cfg)
+	esClient, err := elasticsearch.NewClient(cfg)
 	if err != nil {
 		return
 	}
@@ -96,6 +111,17 @@ func (ES *ElasticsearchVectorStore) AddText(ctx context.Context, indexName strin
 	return
 }
 
+// A function for marshaling structs to JSON string
+func jsonStruct(doc interface{}) (string, error) {
+	// Marshal the struct to JSON and check for errors
+	b, err := json.Marshal(doc)
+	if err != nil {
+		fmt.Println("json.Marshal ERROR:", err)
+		return "", err
+	}
+	return string(b), nil
+}
+
 // AddDocuments store a batch of documents to vector index
 // it will also store embedding of the document using specified embedding model
 // If the index doesnt exist, it will create one with default schema
@@ -104,7 +130,6 @@ func (ES *ElasticsearchVectorStore) AddDocuments(ctx context.Context, indexName 
 	if err != nil {
 		return
 	}
-
 	objVectors, err := ES.embeddingModel.EmbedDocuments(document.DocumentsToStrings(documents))
 	if err != nil {
 		return
@@ -112,13 +137,30 @@ func (ES *ElasticsearchVectorStore) AddDocuments(ctx context.Context, indexName 
 
 	// TODO make it bulk request
 	esDocs := dataToESDoc(documents, objVectors)
-	for idx := range esDocs {
-		_, err := ES.esClient.Index(indexName).Request(esDocs[idx]).Do(ctx)
+	for _, esDoc := range esDocs {
+		jsonDoc, err := jsonStruct(esDoc)
 		if err != nil {
-			log.Println(err)
+			log.Printf("%+v\n", err)
 			batchErr = append(batchErr, err)
 			continue
 		}
+		response, err := ES.esClient.Index(
+			indexName,
+			strings.NewReader(jsonDoc),
+			ES.esClient.Index.WithContext(ctx),
+		)
+		if err != nil {
+			log.Printf("%+v\n", err)
+			batchErr = append(batchErr, err)
+			continue
+		}
+		if response.IsError() {
+			log.Printf("%+v\n", err)
+			batchErr = append(batchErr, err)
+			continue
+		}
+		defer response.Body.Close()
+
 	}
 
 	return
@@ -126,8 +168,23 @@ func (ES *ElasticsearchVectorStore) AddDocuments(ctx context.Context, indexName 
 
 // DeleteIndex drop the index
 func (ES *ElasticsearchVectorStore) DeleteIndex(ctx context.Context, indexName string) (err error) {
-	_, err = ES.esClient.API.Indices.Delete(indexName).Do(ctx)
+	_, err = ES.esClient.Indices.Delete(
+		[]string{indexName},
+		ES.esClient.Indices.Delete.WithContext(ctx),
+	)
 	return
+}
+
+type KNNSearchBody struct {
+	KNN    KNNField `json:"knn"`
+	Fields []string `json:"fields"`
+}
+
+type KNNField struct {
+	Field         string    `json:"field"`
+	QueryVector   []float32 `json:"query_vector"`
+	K             int64     `json:"k"`
+	NumCandidates int64     `json:"num_candidates"`
 }
 
 // SearchVector by providing the vector from embedding function
@@ -137,21 +194,36 @@ func (ES *ElasticsearchVectorStore) SearchVector(ctx context.Context, indexName 
 		opt(&opts)
 	}
 
-	R := search.NewRequest()
+	knnSearchBody := KNNSearchBody{
+		KNN: KNNField{
+			Field:         "vector",
+			QueryVector:   vector,
+			K:             5,
+			NumCandidates: 5,
+		},
+		Fields: []string{"dense_vector"},
+	}
 
-	R.Knn = []types.KnnQuery{{
-		Field:         "vector",
-		QueryVector:   vector,
-		K:             5,
-		NumCandidates: 5,
-	}}
-
-	resp, err := ES.esClient.API.Search().Index(indexName).Request(R).Do(ctx)
+	jsonVector, err := jsonStruct(knnSearchBody)
 	if err != nil {
 		return
 	}
 
-	docs, err = hitToDocs(resp.Hits.Hits, opts.AdditionalFields)
+	resp, err := ES.esClient.API.KnnSearch(
+		[]string{indexName},
+		ES.esClient.API.KnnSearch.WithContext(ctx),
+		ES.esClient.API.KnnSearch.WithBody(strings.NewReader(jsonVector)),
+	)
+	defer resp.Body.Close()
+
+	if resp.IsError() {
+		err = fmt.Errorf("es8 got error with status : %+v and response: %+v", resp.Status(), resp)
+		return []document.Document{}, err
+	}
+	respBody := ElasticResponse{}
+	err = json.NewDecoder(resp.Body).Decode(&respBody)
+
+	docs, err = hitToDocs(respBody, opts.AdditionalFields)
 
 	return
 }
@@ -161,13 +233,33 @@ func (ES *ElasticsearchVectorStore) createIndexIfNotExist(ctx context.Context, i
 	if err != nil || exist {
 		return
 	}
-	_, err = ES.esClient.Indices.Create(indexName).Raw(strings.NewReader(default_mapping)).Do(ctx)
-
+	resp, err := ES.esClient.Indices.Create(
+		indexName,
+		ES.esClient.Indices.Create.WithBody(strings.NewReader(default_mapping)),
+		ES.esClient.Indices.Create.WithContext(ctx),
+	)
+	if err != nil {
+		log.Println("createIndexIfNotExist Indices.Create err: ", err)
+		return
+	}
+	if resp.IsError() {
+		err = fmt.Errorf("error createIndex with response: %+v", resp)
+	}
 	return
 }
 
 func (ES *ElasticsearchVectorStore) isIndexExist(ctx context.Context, indexName string) (exist bool, err error) {
-	exist, err = ES.esClient.API.Indices.Exists(indexName).IsSuccess(ctx)
+	resp, err := ES.esClient.API.Indices.Exists(
+		[]string{indexName},
+		ES.esClient.API.Indices.Exists.WithContext(ctx),
+	)
+	if err != nil {
+		return false, err
+	}
+	if resp.StatusCode == 400 || resp.StatusCode == 404 {
+		return false, nil
+	}
+	exist = true
 	return
 }
 
@@ -190,7 +282,8 @@ func dataToESDoc(documents []document.Document, vector [][]float32) (output []el
 }
 
 // hitToDocs convert es hits to document
-func hitToDocs(hits []types.Hit, additionalFields []string) (docs []document.Document, err error) {
+func hitToDocs(esRespBody ElasticResponse, additionalFields []string) (docs []document.Document, err error) {
+	hits := esRespBody.Hits.Hits
 	for _, hit := range hits {
 		var source map[string]interface{}
 		err = json.Unmarshal(hit.Source_, &source)
