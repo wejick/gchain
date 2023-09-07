@@ -60,7 +60,7 @@ func (L *CorrectnessEval) Evaluate(input string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	output, err := L.llmModel.Call(context.Background(), prompt, model.WithMaxToken(100))
+	output, err := L.llmModel.Call(context.Background(), prompt, model.WithMaxToken(1000))
 	if err != nil {
 		return false, err
 	}

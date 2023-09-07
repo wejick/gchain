@@ -1,0 +1,4 @@
+test_name,evaluator,input,expectation
+result is json,valid_json,{},True
+talking about my leave,correctness,"Hi, thanks for reaching out. your leave left 3 days","your leave left 3 days"
+being empathetic,correctness,"Sorry for your loss, I can understand how you feel","is talking empathetic"
