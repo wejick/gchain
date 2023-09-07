@@ -119,7 +119,7 @@ func TestStuffSummarizationChainChat(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotEmpty(t, output)
 
-	IsMeaningfull := eval.NewLLMEval(llmModel, "Is the input meaningful?")
+	IsMeaningfull := eval.NewCorrectnessEval(llmModel, "Is the input meaningful?")
 	evalOutput, err := IsMeaningfull.Evaluate(output)
 	if !evalOutput {
 		t.Error(err)
