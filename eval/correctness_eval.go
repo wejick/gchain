@@ -19,11 +19,6 @@ type CorrectnessEval struct {
 	expectation        string
 }
 
-type llmEvalOutput struct {
-	Pass   bool   `json:"pass"`
-	Reason string `json:"reason"`
-}
-
 // NewCorrectnessEval create new correctness evaluator
 func NewCorrectnessEval(llmModel model.LLMModel, expectation string) *CorrectnessEval {
 	evaluationTemplate, _ := prompt.NewPromptTemplate("evaluation", correctnessEvalInstruction)
@@ -37,7 +32,7 @@ func NewCorrectnessEval(llmModel model.LLMModel, expectation string) *Correctnes
 
 // The prompt based on
 // https://github.com/axilla-io/ax/blob/main/packages/axeval/src/prompt.ts
-var correctnessEvalInstruction = `You are grading output according to a user-specified rubric. If the statement in the rubric is true, then the output passes the test. You respond with a JSON object with this structure: {pass: boolean; reason: string;}. Only return the JSON object.
+const correctnessEvalInstruction = `You are grading output according to a user-specified rubric. If the statement in the rubric is true, then the output passes the test. You respond with a JSON object with this structure: {pass: boolean; reason: string;}. Only return the JSON object.
 Examples:
 
 Input: Hello world

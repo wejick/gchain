@@ -9,3 +9,8 @@ package eval
 type Evaluator interface {
 	Evaluate(input string) (bool, error)
 }
+
+type llmEvalOutput struct {
+	Pass   bool   `json:"pass"`
+	Reason string `json:"reason"`
+}
