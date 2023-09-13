@@ -88,11 +88,19 @@ func (O *OpenAIChatModel) Chat(ctx context.Context, messages []model.ChatMessage
 			Parameters:  f.Parameters,
 		})
 	}
+	chatCompletionMessage := []goopenai.ChatCompletionMessage{}
+	if opts.SystemPrompt != "" {
+		chatCompletionMessage = append(chatCompletionMessage, goopenai.ChatCompletionMessage{
+			Role: model.ChatMessageRoleSystem,
+			Content: opts.SystemPrompt,
+		})
+	}
+	chatCompletionMessage = append(chatCompletionMessage, convertMessagesToOai(messages)...)
 	request := goopenai.ChatCompletionRequest{
 		Model:       goopenai.GPT3Dot5Turbo,
 		MaxTokens:   opts.MaxToken,
 		Temperature: opts.Temperature,
-		Messages:    convertMessagesToOai(messages),
+		Messages:    chatCompletionMessage,
 		Functions:   RequestFunctions,
 		Stream:      false,
 	}

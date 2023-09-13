@@ -24,12 +24,19 @@ type EmbeddingModel interface {
 
 type Option struct {
 	Temperature              float32
+	SystemPrompt             string
 	StreamingChannel         chan ChatMessage // non chat model can also use this
 	Functions                []FunctionDefinition
 	AdditionalMetadataFields []string
 	MaxToken                 int
 	IsStreaming              bool
 	Verbose                  bool
+}
+
+func WithSystemPrompt(systemPrompt string) func(*Option) {
+	return func(o *Option) {
+		o.SystemPrompt = systemPrompt
+	}
 }
 
 func WithTemperature(temp float32) func(*Option) {
