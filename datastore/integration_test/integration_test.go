@@ -9,6 +9,7 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/sashabaranov/go-openai"
 	"github.com/stretchr/testify/assert"
@@ -126,6 +127,8 @@ func TestElastic(t *testing.T) {
 	for _, e := range batchErr {
 		assert.NoError(t, e, "addDocuments batchErr")
 	}
+
+	time.Sleep(1 * time.Second) // to give time es to ingest the documents
 
 	response, err := esClient.Search(context.Background(), strings.ToLower(className), "city skyline")
 	assert.NoError(t, err)
