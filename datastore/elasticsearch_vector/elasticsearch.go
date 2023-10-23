@@ -214,6 +214,10 @@ func (ES *ElasticsearchVectorStore) SearchVector(ctx context.Context, indexName 
 		ES.esClient.API.KnnSearch.WithContext(ctx),
 		ES.esClient.API.KnnSearch.WithBody(strings.NewReader(jsonVector)),
 	)
+	if err != nil {
+		log.Println("[SearchVector] KnnSearch err: ", err)
+		return
+	}
 	defer resp.Body.Close()
 
 	if resp.IsError() {
