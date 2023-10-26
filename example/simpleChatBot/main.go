@@ -17,7 +17,7 @@ func main() {
 	fmt.Println("Type .quit to exit")
 
 	var authToken = os.Getenv("OPENAI_API_KEY")
-	chatModel := _openai.NewOpenAIChatModel(authToken, "", "", _openai.GPT3Dot5Turbo0301, callback.NewManager(), false)
+	chatModel := _openai.NewOpenAIChatModel(authToken, "", "", "", _openai.GPT3Dot5Turbo0301, callback.NewManager(), false)
 	memory := []model.ChatMessage{}
 	streamingChannel := make(chan model.ChatMessage, 100)
 	convoChain := conversation.NewConversationChain(chatModel, memory, callback.NewManager(), "You're helpful chatbot that answer human question very concisely", false)

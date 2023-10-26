@@ -25,7 +25,7 @@ var authToken = os.Getenv("OPENAI_API_KEY")
 var chatModel *_openai.OpenAIChatModel
 
 func main() {
-	chatModel = _openai.NewOpenAIChatModel(authToken, "", "", _openai.GPT3Dot5Turbo0301, callback.NewManager(), false)
+	chatModel = _openai.NewOpenAIChatModel(authToken, "", "", "", _openai.GPT3Dot5Turbo0301, callback.NewManager(), false)
 
 	fs := http.FileServer(http.Dir("."))
 	http.Handle("/", fs)

@@ -26,6 +26,7 @@ type Option struct {
 	Temperature              float32
 	StreamingChannel         chan ChatMessage // non chat model can also use this
 	Functions                []FunctionDefinition
+	FunctionCall             any
 	AdditionalMetadataFields []string
 	MaxToken                 int
 	IsStreaming              bool
@@ -65,5 +66,11 @@ func WithStreaming(isStreaming bool) func(*Option) {
 func WithFunctions(function []FunctionDefinition) func(*Option) {
 	return func(o *Option) {
 		o.Functions = function
+	}
+}
+
+func WithFunctionCall(functionCall any) func(*Option) {
+	return func(o *Option) {
+		o.FunctionCall = functionCall
 	}
 }

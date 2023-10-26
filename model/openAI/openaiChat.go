@@ -20,13 +20,16 @@ type OpenAIChatModel struct {
 }
 
 // NewOpenAIChatModel return new openAI Model instance
-func NewOpenAIChatModel(authToken string, orgID string, baseURL string, modelName string, callbackManager *callback.Manager, verbose bool) (llm *OpenAIChatModel) {
+func NewOpenAIChatModel(authToken string, orgID string, baseURL string, apiVersion string, modelName string, callbackManager *callback.Manager, verbose bool) (llm *OpenAIChatModel) {
 	var client *goopenai.Client
 	if baseURL == "" {
 		client = goopenai.NewClient(authToken)
 	} else {
 		config := goopenai.DefaultAzureConfig(authToken, baseURL)
 		config.OrgID = orgID
+		if apiVersion != "" {
+			config.APIVersion = apiVersion
+		}
 		client = goopenai.NewClientWithConfig(config)
 	}
 
@@ -95,6 +98,9 @@ func (O *OpenAIChatModel) Chat(ctx context.Context, messages []model.ChatMessage
 		Messages:    convertMessagesToOai(messages),
 		Functions:   RequestFunctions,
 		Stream:      false,
+	}
+	if opts.FunctionCall != nil {
+		request.FunctionCall = opts.FunctionCall
 	}
 
 	response, err := O.c.CreateChatCompletion(ctx, request)

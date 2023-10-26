@@ -13,10 +13,13 @@ require (
 )
 
 require (
+	github.com/alecthomas/jsonschema v0.0.0-20220216202328-9eeeec9d044b // indirect
 	github.com/elastic/elastic-transport-go/v8 v8.3.0 // indirect
+	github.com/iancoleman/orderedmap v0.0.0-20190318233801-ac98e3ecb4b0 // indirect
 	github.com/k0kubun/colorstring v0.0.0-20150214042306-9440f1994b88 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.16 // indirect
+	github.com/tfkhsr/jsonschema v0.0.0-20180218143334-273afdd5a88c // indirect
 	golang.org/x/sys v0.6.0 // indirect
 )
 
