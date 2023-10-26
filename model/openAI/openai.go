@@ -14,16 +14,65 @@ type OpenAIModel struct {
 	callbackManager *callback.Manager
 }
 
-// NewOpenAIModel return new openAI Model instance
-func NewOpenAIModel(authToken string, orgID string, baseURL string, modelName string, callbackManager *callback.Manager, verbose bool) (llm *OpenAIModel) {
-	var client *goopenai.Client
-	if baseURL == "" {
-		client = goopenai.NewClient(authToken)
-	} else {
-		config := goopenai.DefaultAzureConfig(authToken, baseURL)
-		config.OrgID = orgID
-		client = goopenai.NewClientWithConfig(config)
+type OpenAIOption struct {
+	OrgID      string
+	BaseURL    string
+	APIVersion string
+
+	Verbose bool
+}
+
+func WithOrgID(OrgID string) func(*OpenAIOption) {
+	return func(o *OpenAIOption) {
+		o.OrgID = OrgID
 	}
+}
+
+func WithBaseURL(baseURL string) func(*OpenAIOption) {
+	return func(o *OpenAIOption) {
+		o.BaseURL = baseURL
+	}
+}
+
+func WithAPIVersion(apiVersion string) func(*OpenAIOption) {
+	return func(o *OpenAIOption) {
+		o.APIVersion = apiVersion
+	}
+}
+
+func WithVerbose(verbose bool) func(*OpenAIOption) {
+	return func(o *OpenAIOption) {
+		o.Verbose = verbose
+	}
+}
+
+func newOpenAIClient(authToken string, opts OpenAIOption) (client *goopenai.Client) {
+	var clientConfig goopenai.ClientConfig
+
+	// check if it's azure or not
+	if opts.BaseURL == "" {
+		clientConfig = goopenai.DefaultConfig(authToken)
+	} else {
+		clientConfig = goopenai.DefaultAzureConfig(authToken, opts.BaseURL)
+		clientConfig.OrgID = opts.OrgID
+	}
+
+	if opts.APIVersion != "" {
+		clientConfig.APIVersion = opts.APIVersion
+	}
+
+	client = goopenai.NewClientWithConfig(clientConfig)
+	return
+}
+
+// NewOpenAIModel return new openAI Model instance
+func NewOpenAIModel(authToken string, modelName string, callbackManager *callback.Manager, options ...func(*OpenAIOption)) (llm *OpenAIModel) {
+	opts := OpenAIOption{}
+	for _, opt := range options {
+		opt(&opts)
+	}
+
+	client := newOpenAIClient(authToken, opts)
 
 	llm = &OpenAIModel{
 		c:               client,
@@ -31,7 +80,7 @@ func NewOpenAIModel(authToken string, orgID string, baseURL string, modelName st
 		callbackManager: callbackManager,
 	}
 
-	if verbose {
+	if opts.Verbose {
 		llm.callbackManager.RegisterCallback(model.CallbackModelEnd, callback.VerboseCallback)
 	}
 

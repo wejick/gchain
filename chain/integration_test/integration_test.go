@@ -31,9 +31,9 @@ func TestMain(m *testing.M) {
 	// Perform any setup or initialization here
 
 	var authToken = os.Getenv("OPENAI_API_KEY")
-	llmModel = _openai.NewOpenAIModel(authToken, "", "", "text-davinci-003", callback.NewManager(), false)
+	llmModel = _openai.NewOpenAIModel(authToken, "text-davinci-003", callback.NewManager())
 
-	chatModel = _openai.NewOpenAIChatModel(authToken, "", "", _openai.GPT3Dot5Turbo0301, callback.NewManager(), false)
+	chatModel = _openai.NewOpenAIChatModel(authToken, _openai.GPT3Dot5Turbo0301, callback.NewManager())
 
 	exitCode := m.Run()
 
