@@ -26,7 +26,8 @@ func NewOpenAIChatModel(authToken string, modelName string, callbackManager *cal
 		opt(&opts)
 	}
 
-	client := newOpenAIClient(authToken, opts)
+	clientConfig := newOpenAIClientConfig(authToken, opts)
+	client := goopenai.NewClientWithConfig(clientConfig)
 
 	llm = &OpenAIChatModel{
 		c:               client,

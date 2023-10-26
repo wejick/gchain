@@ -19,7 +19,8 @@ func NewOpenAIEmbedModel(authToken string, modelName goopenai.EmbeddingModel, op
 		opt(&opts)
 	}
 
-	client := newOpenAIClient(authToken, opts)
+	clientConfig := newOpenAIClientConfig(authToken, opts)
+	client := goopenai.NewClientWithConfig(clientConfig)
 
 	model = &OpenAIEmbedModel{
 		c:     client,

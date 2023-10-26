@@ -46,9 +46,7 @@ func WithVerbose(verbose bool) func(*OpenAIOption) {
 	}
 }
 
-func newOpenAIClient(authToken string, opts OpenAIOption) (client *goopenai.Client) {
-	var clientConfig goopenai.ClientConfig
-
+func newOpenAIClientConfig(authToken string, opts OpenAIOption) (clientConfig goopenai.ClientConfig) {
 	// check if it's azure or not
 	if opts.BaseURL == "" {
 		clientConfig = goopenai.DefaultConfig(authToken)
@@ -61,7 +59,6 @@ func newOpenAIClient(authToken string, opts OpenAIOption) (client *goopenai.Clie
 		clientConfig.APIVersion = opts.APIVersion
 	}
 
-	client = goopenai.NewClientWithConfig(clientConfig)
 	return
 }
 
@@ -72,7 +69,8 @@ func NewOpenAIModel(authToken string, modelName string, callbackManager *callbac
 		opt(&opts)
 	}
 
-	client := newOpenAIClient(authToken, opts)
+	clientConfig := newOpenAIClientConfig(authToken, opts)
+	client := goopenai.NewClientWithConfig(clientConfig)
 
 	llm = &OpenAIModel{
 		c:               client,
