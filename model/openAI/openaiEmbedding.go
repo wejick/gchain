@@ -13,15 +13,14 @@ type OpenAIEmbedModel struct {
 }
 
 // NewOpenAIEmbedModel return new openAI Model instance
-func NewOpenAIEmbedModel(authToken string, orgID string, baseURL string, modelName goopenai.EmbeddingModel) (model *OpenAIEmbedModel) {
-	var client *goopenai.Client
-	if baseURL == "" {
-		client = goopenai.NewClient(authToken)
-	} else {
-		config := goopenai.DefaultAzureConfig(authToken, baseURL)
-		config.OrgID = orgID
-		client = goopenai.NewClientWithConfig(config)
+func NewOpenAIEmbedModel(authToken string, modelName goopenai.EmbeddingModel, options ...func(*OpenAIOption)) (model *OpenAIEmbedModel) {
+	opts := OpenAIOption{}
+	for _, opt := range options {
+		opt(&opts)
 	}
+
+	clientConfig := newOpenAIClientConfig(authToken, opts)
+	client := goopenai.NewClientWithConfig(clientConfig)
 
 	model = &OpenAIEmbedModel{
 		c:     client,
