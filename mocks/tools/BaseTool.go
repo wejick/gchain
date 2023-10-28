@@ -14,6 +14,20 @@ type BaseTool struct {
 	mock.Mock
 }
 
+// GetDefinitionString provides a mock function with given fields:
+func (_m *BaseTool) GetDefinitionString() string {
+	ret := _m.Called()
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func() string); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	return r0
+}
+
 // GetFunctionDefinition provides a mock function with given fields:
 func (_m *BaseTool) GetFunctionDefinition() model.FunctionDefinition {
 	ret := _m.Called()
@@ -23,20 +37,6 @@ func (_m *BaseTool) GetFunctionDefinition() model.FunctionDefinition {
 		r0 = rf()
 	} else {
 		r0 = ret.Get(0).(model.FunctionDefinition)
-	}
-
-	return r0
-}
-
-// GetToolDescription provides a mock function with given fields:
-func (_m *BaseTool) GetToolDescription() string {
-	ret := _m.Called()
-
-	var r0 string
-	if rf, ok := ret.Get(0).(func() string); ok {
-		r0 = rf()
-	} else {
-		r0 = ret.Get(0).(string)
 	}
 
 	return r0
