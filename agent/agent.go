@@ -74,7 +74,7 @@ func (E *Executor) Run(ctx context.Context, input map[string]string) (output map
 		}
 
 		// run plan / execute tool
-		if plan.toolName == "" {
+		if plan.toolName != "" {
 			toolsOutput, err := E.tools[plan.toolName].SimpleRun(ctx, plan.toolInputJson)
 			if err != nil {
 				return nil, err
