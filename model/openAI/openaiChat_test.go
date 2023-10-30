@@ -4,14 +4,13 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/sashabaranov/go-openai"
 	goopenai "github.com/sashabaranov/go-openai"
 	model "github.com/wejick/gchain/model"
 )
 
 func TestConvertMessageToOai(t *testing.T) {
 	message := model.ChatMessage{Role: "system", Content: "Welcome to our system"}
-	expected := openai.ChatCompletionMessage{Role: "system", Content: "Welcome to our system"}
+	expected := goopenai.ChatCompletionMessage{Role: "system", Content: "Welcome to our system"}
 
 	result := convertMessageToOai(message)
 
@@ -28,7 +27,7 @@ func TestConvertMessagesToOai(t *testing.T) {
 		{Role: "AI", Name: "assist", Content: "I will assist you"},
 	}
 
-	expected := []openai.ChatCompletionMessage{
+	expected := []goopenai.ChatCompletionMessage{
 		{Role: "system", Content: "Welcome to our system"},
 		{Role: "AI", Content: "Heiho, I am AI"},
 		{Role: "user", Content: "Hello, I need assistance"},

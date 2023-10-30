@@ -14,8 +14,7 @@ import (
 
 func main() {
 	var authToken = os.Getenv("OPENAI_API_KEY")
-	var chatModel model.ChatModel
-	chatModel = _openai.NewOpenAIChatModel(authToken, "", "", "", _openai.GPT3Dot5Turbo0301, callback.NewManager(), false)
+	chatModel := _openai.NewOpenAIChatModel(authToken, _openai.GPT3Dot5Turbo0301, callback.NewManager())
 	memory := []model.ChatMessage{}
 
 	greeter := greeting.NewGreetingTool()

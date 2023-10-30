@@ -22,7 +22,7 @@ func TestMain(m *testing.M) {
 	fmt.Println("Running integration tests...")
 
 	var authToken = os.Getenv("OPENAI_API_KEY")
-	llmModel = _openai.NewOpenAIModel(authToken, "", "", "text-ada-001", callback.NewManager(), false)
+	llmModel = _openai.NewOpenAIModel(authToken, "text-ada-001", callback.NewManager())
 
 	exitCode := m.Run()
 
@@ -32,14 +32,14 @@ func TestMain(m *testing.M) {
 var authToken = os.Getenv("OPENAI_API_KEY")
 
 func TestOpenAICall(t *testing.T) {
-	var testModel = _openai.NewOpenAIModel(authToken, "", "", "text-ada-001", callback.NewManager(), false)
+	var testModel = _openai.NewOpenAIModel(authToken, "text-ada-001", callback.NewManager())
 	output, err := testModel.Call(context.Background(), "we are us, we are us, we are ", model.WithTemperature(0))
 	assert.NoError(t, err)
 	assert.NotEmpty(t, output)
 }
 
 func TestOpenAIChat(t *testing.T) {
-	var testModel = _openai.NewOpenAIChatModel(authToken, "", "", _openai.GPT3Dot5Turbo0301, callback.NewManager(), false)
+	var testModel = _openai.NewOpenAIChatModel(authToken, _openai.GPT3Dot5Turbo0301, callback.NewManager())
 
 	testMessages := []model.ChatMessage{
 		{Role: model.ChatMessageRoleUser, Content: "Answer in short and directly, Jakarta is capital city of what ?"},
@@ -50,7 +50,7 @@ func TestOpenAIChat(t *testing.T) {
 }
 
 func TestOpenAIChatCall(t *testing.T) {
-	var testModel = _openai.NewOpenAIChatModel(authToken, "", "", _openai.GPT3Dot5Turbo0301, callback.NewManager(), false)
+	var testModel = _openai.NewOpenAIChatModel(authToken, _openai.GPT3Dot5Turbo0301, callback.NewManager())
 
 	output, err := testModel.Call(context.Background(), "Answer in short and directly, Jakarta is capital city of what ?")
 	if err != nil {
@@ -61,7 +61,7 @@ func TestOpenAIChatCall(t *testing.T) {
 }
 
 func TestOpenAIEmbedding(t *testing.T) {
-	embeddingModel := _openai.NewOpenAIEmbedModel(authToken, "", "", openai.AdaEmbeddingV2)
+	embeddingModel := _openai.NewOpenAIEmbedModel(authToken, openai.AdaEmbeddingV2)
 
 	embedding, err := embeddingModel.EmbedQuery("answer in short and direct")
 	if err != nil {

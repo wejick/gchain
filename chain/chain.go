@@ -17,6 +17,16 @@ type BaseChain interface {
 	SimpleRun(ctx context.Context, prompt string, options ...func(*model.Option)) (output string, err error)
 }
 
+type DummyChain struct{}
+
+func (D *DummyChain) Run(ctx context.Context, prompt map[string]string, options ...func(*model.Option)) (output map[string]string, err error) {
+	return
+}
+
+func (D *DummyChain) SimpleRun(ctx context.Context, prompt string, options ...func(*model.Option)) (output string, err error) {
+	return
+}
+
 const (
 	CallbackChainStart = "chain_start"
 	CallbackChainEnd   = "chain_end"

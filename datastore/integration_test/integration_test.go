@@ -41,8 +41,8 @@ const (
 func TestMain(m *testing.M) {
 	fmt.Println("Running integration tests...")
 
-	llmModel = _openai.NewOpenAIModel(OAIauthToken, "", "", "text-ada-001", callback.NewManager(), true)
-	embeddingModel = _openai.NewOpenAIEmbedModel(OAIauthToken, "", "", openai.AdaEmbeddingV2)
+	llmModel = _openai.NewOpenAIModel(OAIauthToken, "text-ada-001", callback.NewManager())
+	embeddingModel = _openai.NewOpenAIEmbedModel(OAIauthToken, openai.AdaEmbeddingV2)
 	metadata := map[string]interface{}{
 		"url":  "https://wejick.wordpress.com",
 		"time": 1847,

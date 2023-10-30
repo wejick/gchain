@@ -24,3 +24,7 @@ build-example:
 	@for dir in $(shell find ./example -type d); do \
 		(cd $$dir && go build .); \
 	done
+generate-mock:
+	mockery --all --keeptree
+	-rm -r mocks/internal_mock
+	mv mocks/internal mocks/internal_mock

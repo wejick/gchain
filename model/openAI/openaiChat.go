@@ -20,18 +20,14 @@ type OpenAIChatModel struct {
 }
 
 // NewOpenAIChatModel return new openAI Model instance
-func NewOpenAIChatModel(authToken string, orgID string, baseURL string, apiVersion string, modelName string, callbackManager *callback.Manager, verbose bool) (llm *OpenAIChatModel) {
-	var client *goopenai.Client
-	if baseURL == "" {
-		client = goopenai.NewClient(authToken)
-	} else {
-		config := goopenai.DefaultAzureConfig(authToken, baseURL)
-		config.OrgID = orgID
-		if apiVersion != "" {
-			config.APIVersion = apiVersion
-		}
-		client = goopenai.NewClientWithConfig(config)
+func NewOpenAIChatModel(authToken string, modelName string, callbackManager *callback.Manager, options ...func(*OpenAIOption)) (llm *OpenAIChatModel) {
+	opts := OpenAIOption{}
+	for _, opt := range options {
+		opt(&opts)
 	}
+
+	clientConfig := newOpenAIClientConfig(authToken, opts)
+	client := goopenai.NewClientWithConfig(clientConfig)
 
 	llm = &OpenAIChatModel{
 		c:               client,
@@ -39,7 +35,7 @@ func NewOpenAIChatModel(authToken string, orgID string, baseURL string, apiVersi
 		callbackManager: callbackManager,
 	}
 
-	if verbose {
+	if opts.Verbose {
 		llm.callbackManager.RegisterCallback(model.CallbackModelEnd, callback.VerboseCallback)
 	}
 

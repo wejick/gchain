@@ -23,7 +23,7 @@ func main() {
 	var err error
 
 	// create new openai embedding model
-	embeddingModel := _openai.NewOpenAIEmbedModel(OAIauthToken, "", "", openai.AdaEmbeddingV2)
+	embeddingModel := _openai.NewOpenAIEmbedModel(OAIauthToken, openai.AdaEmbeddingV2)
 	v.Embedding, err = embeddingModel.EmbedQuery(input)
 	if err != nil {
 		fmt.Println(err)
