@@ -5,8 +5,10 @@ import "strings"
 type DataType string
 
 const (
-	FunctionDataTypeString DataType = "string"
-	FunctionDataTypeObject DataType = "object"
+	FunctionDataTypeBoolean DataType = "boolean"
+	FunctionDataTypeString  DataType = "string"
+	FunctionDataTypeObject  DataType = "object"
+	FunctionDataTypeArray   DataType = "array"
 )
 
 type FunctionJsonSchema struct {
@@ -15,6 +17,7 @@ type FunctionJsonSchema struct {
 	Required    []string                      `json:"required,omitempty"`
 	Description string                        `json:"description,omitempty"`
 	Enum        []string                      `json:"enum,omitempty"`
+	Items       *FunctionJsonSchema           `json:"items,omitempty"`
 }
 
 // FunctionDefinition is to describe function to model

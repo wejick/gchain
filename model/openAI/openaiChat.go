@@ -95,6 +95,9 @@ func (O *OpenAIChatModel) Chat(ctx context.Context, messages []model.ChatMessage
 		Functions:   RequestFunctions,
 		Stream:      false,
 	}
+	if opts.FunctionCall != nil {
+		request.FunctionCall = opts.FunctionCall
+	}
 
 	response, err := O.c.CreateChatCompletion(ctx, request)
 	if err != nil {
