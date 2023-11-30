@@ -39,6 +39,11 @@ func (_m *BaseAgent) Plan(ctx context.Context, userPrompt string, actionTaken []
 	return r0, r1
 }
 
+// RegisterToolDefinition provides a mock function with given fields: toolDefinition
+func (_m *BaseAgent) RegisterToolDefinition(toolDefinition string) {
+	_m.Called(toolDefinition)
+}
+
 // NewBaseAgent creates a new instance of BaseAgent. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
 // The first argument is typically a *testing.T value.
 func NewBaseAgent(t interface {

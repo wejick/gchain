@@ -26,5 +26,3 @@ build-example:
 	done
 generate-mock:
 	mockery --all --keeptree
-	-rm -r mocks/internal_mock
-	mv mocks/internal mocks/internal_mock

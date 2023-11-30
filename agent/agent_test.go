@@ -14,17 +14,21 @@ type mockAgent struct{}
 
 func (m *mockAgent) Plan(ctx context.Context, input string, actions []Action) (plan Action, err error) {
 	if input == "final" {
-		return Action{finalAction: true, message: "final message"}, nil
+		return Action{FinalAction: true, Message: "final message"}, nil
 	}
 	if input == "error" {
 		return Action{}, errors.New("error")
 	}
 	if input == "tool_error" {
-		return Action{toolName: "mockTool", toolInputJson: "error"}, nil
+		return Action{ToolName: "mockTool", ToolInputJson: "error"}, nil
 	}
 
-	return Action{toolName: "mockTool", toolInputJson: "input"}, nil
+	return Action{ToolName: "mockTool", ToolInputJson: "input"}, nil
 }
+
+func (m *mockAgent) RegisterToolDefinition(toolDefinition string) {}
+
+func (m *mockAgent) RegisterToolName(toolName string) {}
 
 func TestExecutor_Run(t *testing.T) {
 	tool := mockTool.BaseTool{}
