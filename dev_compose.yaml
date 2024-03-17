@@ -11,7 +11,7 @@ services:
       - elasticsearch_data:/usr/share/elasticsearch/data
   
   dev_weaviate:
-    image: semitechnologies/weaviate:1.19.8
+    image: cr.weaviate.io/semitechnologies/weaviate:1.19.8
     ports:
     - 8080:8080
     restart: on-failure:0
